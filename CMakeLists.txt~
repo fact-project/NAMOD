@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 2.8)
+set (CMAKE_CXX_FLAGS "-std=gnu++11 -O3") #-Wall
+project( dual_camera )
+include_directories(/usr/include)
+add_executable( dual_camera dual_camera.cpp)
+#=======================================================================
+# UEYE IDS imaging
+target_link_libraries(dual_camera libueye_api.so )
+#=======================================================================
+# configiration file library: libconfig
+target_link_libraries(dual_camera config++)
+#=======================================================================
+#open CV
+find_package( OpenCV REQUIRED )
+include_directories(/usr/include)
+target_link_libraries(dual_camera ${OpenCV_LIBS} )
+#=======================================================================
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+#link_directories(${PythonLibs_LIBRARY_DIRS})
+#add_definitions(${PythonLibs_DEFINITIONS})
+target_link_libraries(dual_camera ${PYTHON_LIBRARIES} )
+#=======================================================================
+#include_directories(/usr/include/log4cpp)
+#find_package(log4cpp REQUIRED)
+target_link_libraries(dual_camera log4cpp)
+#=======================================================================
