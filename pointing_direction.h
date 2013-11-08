@@ -1,39 +1,38 @@
 //=================================
 // include guard
-#ifndef __TIME_STAMP_MANAGER_H_INCLUDED__
-#define __TIME_STAMP_MANAGER_H_INCLUDED__
+#ifndef __POINTING_DIRECTION_H_INCLUDED__
+#define __POINTING_DIRECTION_H_INCLUDED__
 
 //=================================
 // forward declared dependencies
 
 //=================================
 // included dependencies
-
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <sstream>
-
-#include <time.h>
+#include <math.h>
 #include "programm_verbosity.h"
 
-
 //=================================
-class time_stamp_manager 				:public programm_verbosity{
-bool 	has_been_initialized;
-time_t 	startup_time; 
+class pointing_direction 		:public programm_verbosity{
 public:
+	double 	direction_in_x_in_radiant;
+	double 	direction_in_y_in_radiant;	
 //======================================================================
-time_stamp_manager();
+pointing_direction();
 //======================================================================
-std::string get_startup_time_detail()const;
+std::string get_x_tilt_prompt_in_deg_min_sec();
 //======================================================================
-std::string get_startup_time_stamp()const;
+std::string get_y_tilt_prompt_in_deg_min_sec();
 //======================================================================
-std::string get_current_time_stamp()const;
+std::string get_x_tilt_prompt_in_deg();
 //======================================================================
-std::string get_time_stamp(time_t time_to_stamp)const;
+std::string get_y_tilt_prompt_in_deg();
 //======================================================================
-double get_number_of_seconds_since_startup()const;
+private:
+std::string get_angle_text_prompt_in_deg_arc_min_arc_sec
+(double angle_in_rad);
 };
-#endif // __TIME_STAMP_MANAGER_H_INCLUDED__ 
+#endif // __POINTING_DIRECTION_H_INCLUDED__ 

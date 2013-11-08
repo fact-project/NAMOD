@@ -1,0 +1,7 @@
+sccan_image : 
+{
+  image_name = "20131108_1654_snapshot_1";
+  exposure_time_in_ms = 9.94933569;
+  ueye_camera_ID = 13;
+  time_since_startup_in_seconds = 18.0;
+};

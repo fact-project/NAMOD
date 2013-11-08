@@ -1,8 +1,7 @@
 #include "time_stamp_manager.h"
 //======================================================================
 time_stamp_manager::time_stamp_manager(){
-	//verbosity = false;
-	time(&startup_time);
+		time(&startup_time);
 }
 //======================================================================
 std::string time_stamp_manager::get_startup_time_detail()const{
