@@ -13,7 +13,12 @@ star_in_image.cpp
 intrinsic_camera_parameter.cpp
 simple_image.cpp
 sccan_image.cpp
-global_variables.cpp#
+global_variables.cpp
+ueye_camera.cpp
+sccan_analysis_point.cpp
+sccan_point_pair.cpp
+mirror.cpp
+reflector.cpp
 )
 #=======================================================================
 # UEYE IDS imaging
