@@ -19,6 +19,12 @@ sccan_analysis_point.cpp
 sccan_point_pair.cpp
 mirror.cpp
 reflector.cpp
+snapshot.cpp
+sccan_point_pair_handler.cpp
+quick_align.cpp
+sccan_point_analysis.cpp
+verbosity_handler.cpp
+main_menu.cpp
 )
 #=======================================================================
 # UEYE IDS imaging

@@ -1,1 +1,0 @@
-/home/factastian/Desktop/dual_camera_system/work_20131108/multi-mirror-reflector-alignment/build/CMakeFiles/dual_camera.dir
