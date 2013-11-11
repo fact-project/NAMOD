@@ -18,6 +18,7 @@ public:
 	uint 		snapshot_counter;
 	bool 		flag_long_time_exposure;
 	double 		snapshot_exposure_time_in_ms;
+	double 		desired_relative_camera_response;
 	std::string		snapshot_file_name;
 	ueye_camera *pointer_to_snapshot_camera;
 	std::vector<ueye_camera*> list_of_pointers_to_cameras;
@@ -46,6 +47,8 @@ void take_exposure_time_series(int number_of_exposure_itterations);
 //======================================================================
 void spectate_stars(double threshold_in_sigmas_for_star_detection,
 double radius_in_deg_of_one_sigma_region_for_star_detection);
+//======================================================================
+void aquire_snapshot(bool flag_use_relative_camera_response);
 //======================================================================
 };
 #endif // __SNAPSHOT_H_INCLUDED__ 

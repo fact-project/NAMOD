@@ -23,6 +23,8 @@ public:
 //======================================================================
 pointing_direction();
 //======================================================================
+pointing_direction(const double dir_x_in_rad,const double dir_y_in_rad);
+//======================================================================
 std::string get_x_tilt_prompt_in_deg_min_sec();
 //======================================================================
 std::string get_y_tilt_prompt_in_deg_min_sec();

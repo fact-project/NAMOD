@@ -1,21 +1,24 @@
 #include "snapshot.h"
 //======================================================================
-snapshot::snapshot(){
+snapshot::
+snapshot(){
 	initialize();
 	menu_name = "snapshot";
-	//add_camera(NULL);
 }
 //======================================================================
-snapshot::snapshot(ueye_camera* ptr_to_snapshot_cam){
+snapshot::
+snapshot(ueye_camera* ptr_to_snapshot_cam){
 	add_camera(ptr_to_snapshot_cam);
 	initialize();
 }
 //======================================================================
-void snapshot::initialize(){
+void snapshot::
+initialize(){
 	snapshot_verbosity = true;
 
 	snapshot_counter = 1;
 	snapshot_exposure_time_in_ms = 10;
+	desired_relative_camera_response = 0.9;
 	create_snapshot_file_name();
 	flag_long_time_exposure = false;
 	if(list_of_pointers_to_cameras.size()>0){
@@ -33,7 +36,8 @@ void snapshot::initialize(){
 	}
 }
 //======================================================================
-void snapshot::add_camera(ueye_camera* ptr_to_snapshot_cam){
+void snapshot::
+add_camera(ueye_camera* ptr_to_snapshot_cam){
 	if(choose_camera(ptr_to_snapshot_cam->get_camera_ID())){
 		//camera already in list
 		std::cout<<"snapshot -> add_camera() -> camera ID ";
@@ -50,10 +54,20 @@ void snapshot::add_camera(ueye_camera* ptr_to_snapshot_cam){
 	}
 }
 //======================================================================
-void snapshot::interaction(){
+void snapshot::
+interaction(){
 
 	std::string key_user_wants_to_acquire_image ="y";
-	add_control(key_user_wants_to_acquire_image,"take a snapshot");
+	add_control(key_user_wants_to_acquire_image,"take a snapshot by exp. time");
+
+	std::string 
+	key_user_wants_to_acquire_image_using_camera_response ="x";
+	add_control(key_user_wants_to_acquire_image_using_camera_response,
+	"take a snapshot by rel. camera respons");
+
+	std::string modify_relative_camera_resopnse ="cr";
+	add_control(modify_relative_camera_resopnse,
+	"modify relative camera resopnse");
 	
 	std::string key_modify_exposure_time ="e";	
 	add_control(key_modify_exposure_time,"manipulate exposure time");
@@ -98,24 +112,27 @@ void snapshot::interaction(){
 		flag_user_wants_to_interaction = false;
 	}
 	//==============================================================
-	if(valid_user_input.compare(key_user_wants_to_acquire_image)==0){	
-		//==========================================================
-		// chose to take another interaction_with_ueye_camera
-		//==========================================================
-		// increase snapshot counter for snapshot number in filename
+	if(valid_user_input.compare(
+	key_user_wants_to_acquire_image_using_camera_response)==0){
 		
-		if(pointer_to_snapshot_camera->
-		acquire_image(&snapshot_exposure_time_in_ms)){
-			// sccan_image acquisition was ok
-			pointer_to_snapshot_camera->
-			export_latest_image(snapshot_file_name);
-			
-			pointer_to_snapshot_camera->disp_latest_image();
-		}else{
-			// sccan_image acquisition failed
-		}
-		snapshot_counter++;
-		create_snapshot_file_name();
+		bool use_relative_camera_response = true;
+		aquire_snapshot(use_relative_camera_response);		
+		
+	}
+	//==============================================================
+	if(valid_user_input.compare(modify_relative_camera_resopnse)==0){
+	
+		desired_relative_camera_response =
+		ask_user_for_non_zero_float(
+		"enter new relative camera response (0,1)",0.01,0.99);
+	
+	}
+	//==============================================================
+	if(valid_user_input.compare(key_user_wants_to_acquire_image)==0){	
+
+		bool use_relative_camera_response = false;
+		aquire_snapshot(use_relative_camera_response);
+
 	}
 	//==================================================================
 	if(valid_user_input.compare(key_modify_exposure_time)==0){
@@ -210,7 +227,8 @@ void snapshot::interaction(){
 }while(flag_user_wants_to_interaction);
 }
 //======================================================================
-void snapshot::create_snapshot_file_name(){
+void snapshot::
+create_snapshot_file_name(){
 	std::stringstream snapshot_file_name_stream;
 	snapshot_file_name_stream<<global_time_stamp_manager_instance.
 	get_current_time_stamp();
@@ -219,7 +237,8 @@ void snapshot::create_snapshot_file_name(){
 	snapshot_file_name = snapshot_file_name_stream.str();
 }
 //======================================================================
-std::string snapshot::get_snapshot_prompt(){
+std::string 
+snapshot::get_snapshot_prompt(){
 	int sys_return =  system("clear");
 	std::stringstream out, info;
 	
@@ -252,9 +271,15 @@ std::string snapshot::get_snapshot_prompt(){
 
 	// next desired exposure time
 	info.str("");
-	info<<snapshot_exposure_time_in_ms<<"ms";
+	info<<snapshot_exposure_time_in_ms<<"[ms]";
 	out<<make_nice_line_with_dots
 	("| next desired exposure time",info.str());
+
+	// next desired relative camera response
+	info.str("");
+	info<<desired_relative_camera_response<<"[1]";
+	out<<make_nice_line_with_dots
+	("| next desired relative camera response",info.str());
 
 	// long time exposure feature
 	info.str("");
@@ -427,3 +452,38 @@ double radius_in_deg_of_one_sigma_region_for_star_detection){
 	stars_with_overlay.disp_simple_image("star snapshot");
 }
 //======================================================================
+void snapshot::
+aquire_snapshot(bool flag_use_relative_camera_response){
+	// increase snapshot counter for snapshot number in filename
+	
+	bool snapshot_has_been_taken = false;
+	if(flag_use_relative_camera_response){
+		if(
+			pointer_to_snapshot_camera->
+			acquire_image(
+			&snapshot_exposure_time_in_ms,
+			desired_relative_camera_response)
+		)
+		snapshot_has_been_taken = true;
+	}else{
+		if(
+			pointer_to_snapshot_camera->
+			acquire_image(&snapshot_exposure_time_in_ms)
+		)
+		snapshot_has_been_taken = true;	
+	}
+	
+	if(snapshot_has_been_taken){
+		// sccan_image acquisition was ok
+		pointer_to_snapshot_camera->
+		export_latest_image(snapshot_file_name);
+		
+		pointer_to_snapshot_camera->disp_latest_image();
+		
+	}else{
+		// sccan_image acquisition failed
+	}
+	//prepare next snapshot
+	snapshot_counter++;
+	create_snapshot_file_name();
+}

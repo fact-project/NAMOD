@@ -493,6 +493,8 @@ pointer_to_reflector_camera = reflector_camera;
 bool sccan_point_pair::acquire_sccan_images(
 double *pointer_to_star_exposure_time_in_ms, 
 double *pointer_to_reflector_exposure_time_in_ms,
+double desired_max_rel_star_cam_response,
+double desired_max_rel_refl_cam_response,
 int		max_number_of_exposure_itterations,
 bool	*max_number_of_exposure_itterations_has_been_exceeded
 ){
@@ -501,11 +503,15 @@ bool	*max_number_of_exposure_itterations_has_been_exceeded
 	
 	star_image_ok =
 	pointer_to_star_camera->
-	acquire_image(pointer_to_star_exposure_time_in_ms,0.9);
+	acquire_image(
+	pointer_to_star_exposure_time_in_ms,
+	desired_max_rel_star_cam_response);
 	
 	reflector_image_ok =
 	pointer_to_reflector_camera->
-	acquire_image(pointer_to_reflector_exposure_time_in_ms,0.9);	
+	acquire_image(
+	pointer_to_reflector_exposure_time_in_ms,
+	desired_max_rel_refl_cam_response);	
 	
 	star_image = 
 	pointer_to_star_camera->get_latest_image();

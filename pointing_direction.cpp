@@ -1,9 +1,14 @@
 #include "pointing_direction.h"
 //======================================================================
 pointing_direction::pointing_direction(){
-	//verbosity =true;
 	direction_in_x_in_radiant = 0.0;
 	direction_in_y_in_radiant = 0.0;	
+}
+//======================================================================
+pointing_direction::pointing_direction(
+const double dir_x_in_rad,const double dir_y_in_rad){
+	direction_in_x_in_radiant = dir_x_in_rad;
+	direction_in_y_in_radiant = dir_y_in_rad;
 }
 //======================================================================
 std::string pointing_direction::get_x_tilt_prompt_in_deg_min_sec(){

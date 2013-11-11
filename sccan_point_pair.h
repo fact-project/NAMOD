@@ -101,6 +101,8 @@ void set_cameras(ueye_camera* star_camera,ueye_camera* reflector_camera);
 bool acquire_sccan_images(
 double *pointer_to_star_exposure_time_in_ms, 
 double *pointer_to_reflector_exposure_time_in_ms,
+double desired_max_rel_star_cam_response,
+double desired_max_rel_refl_cam_response,
 int		max_number_of_exposure_itterations,
 bool	*max_number_of_exposure_itterations_has_been_exceeded
 );

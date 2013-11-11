@@ -15,16 +15,18 @@
 //=================================
 class sccan_point_pair_handler 	:public user_interaction{
 	public:
-	//std::vector<sccan_point_pair> list_of_sccan_point_pairs;
 	
 	double star_camera_last_good_exposure_time_in_ms;
+	double star_camera_desired_max_relative_camera_response;
+	
 	double reflector_camera_last_good_exposure_time_in_ms;
+	double reflector_camera_desired_max_relative_camera_response;
 	
 	ueye_camera 	*pointer_to_star_camera;
 	ueye_camera 	*pointer_to_reflector_camera;
 	bool			exposure_range_is_good;
 	int 			sccan_run_number;
-	//bool			verbosity_sccan_handler;
+
 
 	double 	threshold_in_sigmas_for_star_detection;
 	double 	star_recognition_one_sigma_radius_in_degrees;

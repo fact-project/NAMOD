@@ -62,6 +62,8 @@ intrinsic_camera_parameter();
 //======================================================================
 void set_camera_sensor_size(int width,int height);
 //======================================================================
+void set_FoV_to_pixel_mapping(const double new_degrees_per_pixel);
+//======================================================================
 void set_names(std::string new_camera_name,
 std::string new_name_of_optical_system);
 //======================================================================

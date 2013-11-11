@@ -1,8 +1,10 @@
 #include "sccan_point_analysis.h"
 //======================================================================
-sccan_point_analysis::sccan_point_analysis(
+sccan_point_analysis::
+sccan_point_analysis(
 sccan_point_pair_handler* new_pointer_to_sccan_point_pair_handler,
-reflector* new_pointer_to_reflector){
+reflector* new_pointer_to_reflector,
+ueye_camera *new_pointer_to_star_camera){
 	
 	sccan_point_analysis_verbosity = true;
 	
@@ -16,10 +18,14 @@ reflector* new_pointer_to_reflector){
 	
 	pointer_to_sccan_point_pair_handler = 
 	new_pointer_to_sccan_point_pair_handler;
-	pointer_to_reflector = new_pointer_to_reflector;		
+	
+	pointer_to_reflector = new_pointer_to_reflector;
+	
+	pointer_to_star_camera = new_pointer_to_star_camera;
 }	
 //======================================================================
-void sccan_point_analysis::fill_sccan_matrix(){
+void sccan_point_analysis::
+fill_sccan_matrix(){
 	
 	sccan_matrix.clear();
 	
@@ -128,7 +134,8 @@ void sccan_point_analysis::fill_sccan_matrix(){
 	}
 }
 //======================================================================
-std::string sccan_point_analysis::get_sccan_matrix_prompt(){
+std::string sccan_point_analysis::
+get_sccan_matrix_prompt(){
 	std::stringstream out;
 	
 	int number_of_sccan_analysis_points =  sccan_matrix.size();
@@ -171,12 +178,14 @@ std::string sccan_point_analysis::get_sccan_matrix_prompt(){
 	return out.str();
 }
 //======================================================================
-void sccan_point_analysis::display_sccan_matrix_prompt(){
+void sccan_point_analysis::
+display_sccan_matrix_prompt(){
 	std::cout<<std::endl;
 	std::cout<<get_sccan_matrix_prompt();
 }
 //======================================================================
-std::string sccan_point_analysis::get_analysis_prompt(){
+std::string sccan_point_analysis::
+get_analysis_prompt(){
 	std::stringstream out;
 	std::stringstream info;
 	
@@ -210,7 +219,8 @@ std::string sccan_point_analysis::get_analysis_prompt(){
 	return out.str(); 
 }
 //======================================================================
-void sccan_point_analysis::interaction(){
+void sccan_point_analysis::
+interaction(){
 	
 	std::string key_fill_sccan_point_matrix  ="f";
 	add_control(key_fill_sccan_point_matrix,
@@ -219,6 +229,10 @@ void sccan_point_analysis::interaction(){
 	std::string key_show_sccan_point_matrix  ="s";
 	add_control(key_show_sccan_point_matrix,
 	"show sccan point matrix");	
+
+	std::string key_analyse_sccan_point_matrix  ="a";
+	add_control(key_analyse_sccan_point_matrix,
+	"analyse sccan point matrix");	
 	
 	std::string key_draw_all_mirror_response_maps  ="draw";
 	add_control(key_draw_all_mirror_response_maps,
@@ -258,25 +272,33 @@ void sccan_point_analysis::interaction(){
 	//==================================================================
 	if(valid_user_input.compare(key_show_sccan_point_matrix)==0){
 		display_sccan_matrix_prompt();
-		draw_telescope_pointing_directions_of_sccan_runs();
+		//draw_telescope_pointing_directions_of_sccan_runs();
+	}
+	//==================================================================
+	if(valid_user_input.compare(key_analyse_sccan_point_matrix)==0){
+		calculate_pointing_direction_of_telescope_for_max_mirror_response();
 	}
 	//==================================================================
 	if(valid_user_input.compare(key_draw_all_mirror_response_maps)==0){
-		draw_all_mirror_light_flux_response_maps();
+		//draw_all_mirror_light_flux_response_maps();
 	}
 	//==================================================================
 }while(flag_user_wants_to_analyse);
 }
 //======================================================================
-void sccan_point_analysis::toggle_verbosity(){
+void sccan_point_analysis::
+toggle_verbosity(){
 	sccan_point_analysis_verbosity = !sccan_point_analysis_verbosity;
 }
 //======================================================================
-bool sccan_point_analysis::verbosity_status(){
+bool sccan_point_analysis::
+verbosity_status(){
 	return sccan_point_analysis_verbosity;
 }
 //======================================================================
-void sccan_point_analysis::draw_telescope_pointing_directions_of_sccan_runs(){
+/*
+void sccan_point_analysis::
+draw_telescope_pointing_directions_of_sccan_runs(){
    
 	std::stringstream python_execution_string;
 
@@ -301,9 +323,11 @@ void sccan_point_analysis::draw_telescope_pointing_directions_of_sccan_runs(){
 	}
 	
 	PyRun_SimpleString(python_execution_string.str().c_str());
-}
+}*/
 //======================================================================
-void sccan_point_analysis::draw_all_mirror_light_flux_response_maps(){
+/*
+void sccan_point_analysis::
+draw_all_mirror_light_flux_response_maps(){
 	
 	if(sccan_matrix.size()>0){
 	
@@ -337,9 +361,11 @@ void sccan_point_analysis::draw_all_mirror_light_flux_response_maps(){
 		std::cout<<"draw_all_mirror_light_flux_response_maps() -> ";
 		std::cout<<"there are no sccan runs in sccan_matrix!"<<std::endl;
 	}
-}
+}*/
 //======================================================================
-void sccan_point_analysis::draw_normalized_light_flux_response_map(
+/*
+void sccan_point_analysis::
+draw_normalized_light_flux_response_map(
 uint mirror_itterator){
 	std::stringstream python_execution_string;
 
@@ -363,9 +389,11 @@ uint mirror_itterator){
 	}
 	
 	PyRun_SimpleString(python_execution_string.str().c_str());
-}
+}*/
 //======================================================================
-std::string sccan_point_analysis::get_tilt_position_matrix_for_python(){
+/*
+std::string sccan_point_analysis::
+get_tilt_position_matrix_for_python(){
 	
 	std::stringstream list_of_x_tilts_in_deg;
 	std::stringstream list_of_y_tilts_in_deg;
@@ -403,9 +431,11 @@ std::string sccan_point_analysis::get_tilt_position_matrix_for_python(){
 	tilt_position_matrix_for_python<<list_of_y_tilts_in_deg.str();
 	tilt_position_matrix_for_python<<"]";
 	return tilt_position_matrix_for_python.str();
-}
+}*/
 //======================================================================
-std::string sccan_point_analysis::get_light_flux_matrix_for_python(
+/*
+std::string sccan_point_analysis::
+get_light_flux_matrix_for_python(
 uint mirror_itterator){
 	
 
@@ -446,5 +476,158 @@ uint mirror_itterator){
 	
 	return list_of_normalized_light_flux_python_array_string.str();
 		
+}*/
+//======================================================================
+void sccan_point_analysis::
+calculate_pointing_direction_of_telescope_for_max_mirror_response(){
+	
+	int number_of_sccan_analysis_points =  sccan_matrix.size();
+
+	if(number_of_sccan_analysis_points<1){
+		std::cout<<"sccan_point_analysis -> ";
+		std::cout<<"calc -> ";
+		std::cout<<"sccan matrix is empty."<<std::endl;
+		
+	}else{
+		
+		int number_of_mirrors =  sccan_matrix.at(0).size();
+		
+		if(number_of_mirrors<1){
+			std::cout<<"sccan_point_analysis -> ";
+			std::cout<<"calc -> ";
+			std::cout<<"sccan matrix has no mirrors."<<std::endl;
+		}
+		//==============================================================
+		//for all mirrors on reflector
+		//==============================================================
+		for(
+		int mirror_itterator = 0;
+		mirror_itterator<number_of_mirrors;
+		mirror_itterator++)
+		{	
+			pointing_direction 
+			telescope_pointing_when_mirror_is_brightest = 
+			calc_poining_when_mirror_is_brightest(mirror_itterator);
+		}
+
+	}
+}
+//======================================================================
+pointing_direction sccan_point_analysis::
+calc_poining_when_mirror_is_brightest(
+uint mirror_iterator){
+	
+	double telescope_x_direction_in_rad_wighted_with_flux = 0.0;
+	double telescope_y_direction_in_rad_wighted_with_flux = 0.0;
+	double sum_of_all_mirror_responses_in_bulbs = 0.0;
+
+	//==========================================================
+	//for all sccan points of this mirror
+	//==========================================================
+	
+	std::vector<double> dir_x;
+	std::vector<double> dir_y;	
+	std::vector<double> weights;
+
+	for(
+	int sccan_point_itterator = 0;
+	sccan_point_itterator<sccan_matrix.size();
+	sccan_point_itterator++)
+	{	
+		//flux
+		weights.push_back(	
+			sccan_matrix.
+			at(sccan_point_itterator).
+			at(mirror_iterator)->
+			get_normalized_light_flux()
+		);
+		
+		// x
+		dir_x.push_back(
+			sccan_matrix.
+			at(sccan_point_itterator).
+			at(mirror_iterator)->
+			get_star_position_relative_to_pointing_direction().
+			direction_in_x_in_radiant
+		);
+		
+		// y
+		dir_y.push_back(
+			sccan_matrix.
+			at(sccan_point_itterator).
+			at(mirror_iterator)->
+			get_star_position_relative_to_pointing_direction().
+			direction_in_y_in_radiant
+		);
+		
+	}
+	
+	double mean_dir_x = calc_mean_using_wights(dir_x,weights);
+	double mean_dir_y = calc_mean_using_wights(dir_y,weights);	
+	double std_dev_dir_x = 
+	calc_standart_deviation_using_weights(dir_x,weights);	
+	double std_dev_dir_y = 
+	calc_standart_deviation_using_weights(dir_y,weights);	
+	
+	std::cout<<"sccan_point_analysis -> ";
+	std::cout<<"calc -> ";
+	std::cout<<"mirror ID ";
+	std::cout<<sccan_matrix.at(0).at(mirror_iterator)->
+	get_mirror_ID()<<std::endl;
+	std::cout<<"mean x dir: "<<mean_dir_x<<" pm std_dev "<<std_dev_dir_x<<std::endl;
+	std::cout<<"mean y dir: "<<mean_dir_y<<" pm std_dev "<<std_dev_dir_y<<std::endl;
+	
+	pointing_direction telescope_pointing_when_mirror_is_brightest(
+	mean_dir_x,mean_dir_y);
+	
+	return telescope_pointing_when_mirror_is_brightest;
+}
+//======================================================================
+double sccan_point_analysis::
+calc_mean_using_wights(
+std::vector<double> x,std::vector<double> weights){
+
+	if(x.size() != weights.size()){
+		std::cout<<"sccan_point_analysis -> ";
+		std::cout<<"calc_mean_using_wights -> ";
+		std::cout<<"screw you! list of values size("<<x.size()<<"), ";
+		std::cout<<"list of wights size("<<weights.size()<<")!";
+		return 0.0;
+	}
+	
+	double weighted_x_sum = 0.0;
+	double sum_of_weights = 0.0;
+	for(uint iterator=0;iterator<x.size();iterator++){
+		weighted_x_sum = 
+		weighted_x_sum + x.at(iterator)*weights.at(iterator);
+		
+		sum_of_weights = 
+		sum_of_weights + weights.at(iterator);
+	}
+	
+	return weighted_x_sum/sum_of_weights;
+}
+//======================================================================
+double sccan_point_analysis::
+calc_standart_deviation_using_weights(
+std::vector<double> x,std::vector<double> weights){
+	
+	if(x.size() != weights.size()){
+		std::cout<<"sccan_point_analysis -> ";
+		std::cout<<"calc_mean_using_wights -> ";
+		std::cout<<"screw you! list of values size("<<x.size()<<"), ";
+		std::cout<<"list of wights size("<<weights.size()<<")!";
+		return 0.0;
+	}
+	
+	double one_over_size_minus_one = 1.0 / (x.size()-1.0);
+	double weighted_mean = calc_mean_using_wights(x,weights);
+	
+	double sum = 0.0;
+	for(uint iterator=0;iterator<x.size();iterator++){
+		sum = sum + pow(x.at(iterator) - weighted_mean,2.0);
+	}
+	
+	return sqrt(one_over_size_minus_one*sum);
 }
 //======================================================================

@@ -868,11 +868,6 @@ double desired_relative_maximal_camera_response){
 	int exposure_itterations = 0;
 	
 	do{	
-		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
-		std::cout<<"acquire_image() -> ";
-		std::cout<<"exposure time itteration No.: ";
-		std::cout<<exposure_itterations<<std::endl;
-		
 		if(verbosity){
 			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
 			std::cout<<"acquire_image() -> ";
@@ -889,7 +884,17 @@ double desired_relative_maximal_camera_response){
 		latest_image.get_relative_min_and_max_pixel_value(
 		&min_relative_camera_response,
 		&max_relative_camera_response);
-	
+		
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"exp. time iteration No.: ";
+		std::cout<<exposure_itterations;
+		std::cout<<" -> exp. time = ";
+		std::cout<<*pointer_to_desired_exposure_time_in_ms;
+		std::cout<<"ms, ";
+		std::cout<<"max rel. response = ";
+		std::cout<<max_relative_camera_response<<"[1]"<<std::endl;
+		
 		if(verbosity){
 			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
 			std::cout<<"acquire_image() -> ";
@@ -901,14 +906,24 @@ double desired_relative_maximal_camera_response){
 		desired_relative_maximal_camera_response -
 		max_relative_camera_response;
 		
-		if(abs(relative_camera_response_difference) <= 0.05 &&
-		max_relative_camera_response != 1.0){
+		if(verbosity){
+			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+			std::cout<<"acquire_image() -> ";
+			std::cout<<"relative_camera_response_difference ";
+			std::cout<<relative_camera_response_difference;
+			std::cout<<std::endl;
+		}		
+		
+		if(
+		fabs(relative_camera_response_difference) <= 0.05 &&
+		max_relative_camera_response != 1.0
+		){
 			exposure_time_is_bad = false;
 			if(verbosity){
 				std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
 				std::cout<<"acquire_image() -> ";
-				std::cout<<"relative_camera_response_difference ";
-				std::cout<<relative_camera_response_difference;
+				std::cout<<"abs(relative_camera_response_difference) ";
+				std::cout<<fabs(relative_camera_response_difference);
 				std::cout<<std::endl;
 			}
 		}else{
@@ -1185,5 +1200,13 @@ void ueye_camera::toggle_verbosity(){
 	verbosity = !verbosity;
 	intrinsic.toggle_verbosity(verbosity);
 	latest_image.toggle_verbosity(verbosity);
+}
+//======================================================================
+cv::Size ueye_camera::
+get_sensor_size()const{
+	cv::Size sensor_size;
+	sensor_size.height = ueye_camera_sensor_number_of_pixels_in_hight;
+	sensor_size.width  = ueye_camera_sensor_number_of_pixels_in_width;
+	return sensor_size;
 }
 //======================================================================

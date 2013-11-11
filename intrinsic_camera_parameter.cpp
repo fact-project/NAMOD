@@ -1,6 +1,7 @@
 #include "intrinsic_camera_parameter.h"
 //======================================================================
-intrinsic_camera_parameter::intrinsic_camera_parameter(){
+intrinsic_camera_parameter::
+intrinsic_camera_parameter(){
 	
 	if(verbosity){
 		std::cout<<"intrinsic_camera_parameter -> ";
@@ -36,7 +37,9 @@ set_camera_sensor_size(int width,int height){
 	camera_sensor_size.height = (double)height;
 }
 //======================================================================
-void intrinsic_camera_parameter::set_names(std::string new_camera_name,
+void intrinsic_camera_parameter::
+set_names(
+std::string new_camera_name,
 std::string new_name_of_optical_system){
 	name_of_camera = new_camera_name;
 	name_of_optical_system = new_name_of_optical_system;
@@ -77,7 +80,14 @@ double new_radiometric_coefficient_constant){
 	}		
 }
 //======================================================================
-std::string intrinsic_camera_parameter::get_status_prompt(){
+void intrinsic_camera_parameter::
+set_FoV_to_pixel_mapping(const double new_degrees_per_pixel){
+	degrees_per_pixel = new_degrees_per_pixel;
+}
+//======================================================================
+std::string 
+intrinsic_camera_parameter::
+get_status_prompt(){
 	std::stringstream out;
 	out<<"| intrinsic parameters"<<std::endl;
 	out<<"| camera......: "<<name_of_camera<<std::endl;
@@ -89,7 +99,8 @@ std::string intrinsic_camera_parameter::get_status_prompt(){
 	return out.str();
 }
 //======================================================================
-void intrinsic_camera_parameter::disp(){
+void intrinsic_camera_parameter::
+disp(){
 	std::cout<<get_status_prompt();
 }
 //======================================================================
@@ -494,7 +505,8 @@ calculate_pointing_direction(cv::Point position){
 	return direction_of_point;
 }
 //======================================================================
-double intrinsic_camera_parameter::calculate_absolute_light_flux(
+double intrinsic_camera_parameter::
+calculate_absolute_light_flux(
 double exposure_time_in_ms,
 double normalized_pixel_value){
 

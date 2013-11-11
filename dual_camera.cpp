@@ -32,15 +32,23 @@
 #include "sccan_point_analysis.h"
 #include "verbosity_handler.h"
 #include "main_menu.h"
+// plotting
+#include <mgl2/mgl.h>
+
 
 //======================================================================
 int main(){
 	int system_call_return_value;
 	system_call_return_value = system("clear"); 
 	system_call_return_value = system("clear"); 
+	
+	//testing plotting environment
+	mglGraph gr;
+	gr.FPlot("sin(pi*x)");
+	gr.WriteFrame("test.png");
 
 	// python for plotting
-	Py_Initialize();
+	//Py_Initialize();
 	
 	//==================================================================
 	// star camera
@@ -50,9 +58,12 @@ int main(){
 		// intrinsic paramters for star camera
 		//==============================================================
 	intrinsic_camera_parameter parameters_for_star_camera;
+	
 	parameters_for_star_camera.set_names(
 	"ueye 5MPx CMOS",
 	"Carl Zeiss Flektogon F2.4 / f35mm");
+
+	parameters_for_star_camera.set_FoV_to_pixel_mapping(3.34375E-3);
 	
 	parameters_for_star_camera.
 	set_coefficients_for_radiometric_correction_plane(
@@ -70,6 +81,7 @@ int main(){
 		// intrinsic paramters for reflector camera
 		//==============================================================
 	intrinsic_camera_parameter parameters_for_reflector_camera;
+	
 	parameters_for_reflector_camera.set_names(
 	"Thor Labs 1.3MPx CCD",
 	"M12 the imageing source F2.0 / f4mm"
@@ -104,7 +116,7 @@ int main(){
 	
 
 	sccan_point_analysis analysis(
-	&sccan_handle,&reflector_instance);
+	&sccan_handle,&reflector_instance,&star_camera);
 	
 	verbosity_handler verbosity_interaction(
 	&global_time_stamp_manager_instance,

@@ -11,6 +11,7 @@
 #include "programm_verbosity.h"
 #include "intrinsic_camera_parameter.h"
 #include "sccan_image.h"
+#include <cmath>
 //======================================================================
 // UEYE camera by IDS imaging
 // http://www.ids-imaging.de
@@ -79,6 +80,8 @@ void disp_latest_image();
 bool camera_status();
 //======================================================================
 void toggle_verbosity();
+//======================================================================
+cv::Size get_sensor_size()const;
 //======================================================================
 };
 

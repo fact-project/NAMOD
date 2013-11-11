@@ -1,6 +1,7 @@
 #include "sccan_point_pair_handler.h"
 //======================================================================
-sccan_point_pair_handler::sccan_point_pair_handler(){
+sccan_point_pair_handler::
+sccan_point_pair_handler(){
 	verbosity = false;
 	
 	list_of_star_positions_of_all_points_in_directory.
@@ -16,8 +17,10 @@ sccan_point_pair_handler::sccan_point_pair_handler(){
 	}
 	star_camera_last_good_exposure_time_in_ms = 10.0;
 	reflector_camera_last_good_exposure_time_in_ms = 10.0;
-	//list_of_sccan_point_pairs.clear();
 	
+	star_camera_desired_max_relative_camera_response = 0.9;	
+	reflector_camera_desired_max_relative_camera_response = 0.9;
+
 	pointer_to_star_camera = NULL;
 	pointer_to_reflector_camera = NULL;
 
@@ -35,7 +38,8 @@ sccan_point_pair_handler::sccan_point_pair_handler(){
 	update_list_of_star_positions();
 }
 //======================================================================
-void sccan_point_pair_handler::set_cameras(ueye_camera* star_camera,ueye_camera* reflector_camera){
+void sccan_point_pair_handler::
+set_cameras(ueye_camera* star_camera,ueye_camera* reflector_camera){
 	pointer_to_star_camera = star_camera;
 	pointer_to_reflector_camera = reflector_camera;
 
@@ -55,7 +59,8 @@ void sccan_point_pair_handler::set_cameras(ueye_camera* star_camera,ueye_camera*
 	CV_8UC3);
 }
 //======================================================================
-void sccan_point_pair_handler::acquire_sccan_points(int number_of_sccan_points_to_acquire){
+void sccan_point_pair_handler::
+acquire_sccan_points(int number_of_sccan_points_to_acquire){
 	//==================================================================
 	// check number of sccan points
 	//==================================================================
@@ -192,7 +197,8 @@ void sccan_point_pair_handler::acquire_sccan_points(int number_of_sccan_points_t
 	cv::destroyWindow(name_of_status_display.c_str());  
 }
 //======================================================================
-sccan_point_pair sccan_point_pair_handler::acquire_single_sccan_point(
+sccan_point_pair sccan_point_pair_handler::
+acquire_single_sccan_point(
 bool *pointer_to_exposure_range_is_good){
 		
 		sccan_point_pair current_sccan_point
@@ -209,6 +215,8 @@ bool *pointer_to_exposure_range_is_good){
 		current_sccan_point.acquire_sccan_images(
 		&star_camera_last_good_exposure_time_in_ms,
 		&reflector_camera_last_good_exposure_time_in_ms,
+		star_camera_desired_max_relative_camera_response,	
+		reflector_camera_desired_max_relative_camera_response,		
 		max_number_of_exposure_manipulations,
 		&max_number_of_exposure_manipulations_has_been_exceeded
 		);
@@ -231,7 +239,8 @@ bool *pointer_to_exposure_range_is_good){
 	return current_sccan_point;
 }
 //======================================================================
-std::string sccan_point_pair_handler::get_prompt(){
+std::string sccan_point_pair_handler::
+get_prompt(){
 	std::stringstream out, info;
 	// sccan run number
 	info.str("");
@@ -239,18 +248,36 @@ std::string sccan_point_pair_handler::get_prompt(){
 	out<<make_nice_line_with_dots
 	("| sccan run number",info.str());
 	
+	out<<"|"<<std::endl;
+		
 	// star camera exposure time
 	info.str("");
 	info<<star_camera_last_good_exposure_time_in_ms<<"ms";
 	out<<make_nice_line_with_dots
 	("| star camera exposure time",info.str());
 	
+	// star camera desired response
+	info.str("");
+	info<<star_camera_desired_max_relative_camera_response<<"[1]";
+	out<<make_nice_line_with_dots
+	("| star camera desired max rel. response",info.str());
+	
+	out<<"|"<<std::endl;
+	
 	// reflector camera exposure time
 	info.str("");
 	info<<reflector_camera_last_good_exposure_time_in_ms<<"ms";
 	out<<make_nice_line_with_dots
 	("| reflector camera exposure time",info.str());
+	
+	// reflector camera desired response
+	info.str("");
+	info<<reflector_camera_desired_max_relative_camera_response<<"[1]";
+	out<<make_nice_line_with_dots
+	("| reflector camera desired max rel. response",info.str());
 
+	out<<"|"<<std::endl;
+	
 	// exposure range is good
 	info.str("");
 	if(exposure_range_is_good){info<<"TRUE";}else{info<<"FALSE";}
@@ -291,7 +318,8 @@ std::string sccan_point_pair_handler::get_prompt(){
 	return out.str();
 }
 //======================================================================
-void sccan_point_pair_handler::interaction(){
+void sccan_point_pair_handler::
+interaction(){
 	
 	std::string key_user_wants_to_take_more_sccan_points  ="m";
 	std::string key_show_list_of_sccan_points_in_current_directory ="s";
@@ -300,7 +328,9 @@ void sccan_point_pair_handler::interaction(){
 	std::string key_modify_sigma_threshold ="sigma";
 	std::string key_modify_recognition_radius ="radius";
 	std::string key_user_wants_to_end_taking_sccan_points  ="back";
-	
+	std::string key_modify_star_cam_desired_max_rel_respone  ="star_cr";	
+	std::string key_modify_refl_cam_desired_max_rel_respone  ="refl_cr";
+		
 	add_control(key_user_wants_to_take_more_sccan_points,
 	"aquire >N< additional sccan points");
 	
@@ -327,6 +357,14 @@ void sccan_point_pair_handler::interaction(){
 	add_control
 	(key_user_wants_to_end_taking_sccan_points,
 	"back to main menu");
+
+	add_control
+	(key_modify_star_cam_desired_max_rel_respone,
+	"modify star camera max desired rel. respone");
+
+	add_control
+	(key_modify_refl_cam_desired_max_rel_respone,
+	"modify reflector camera max desired rel. respone");
 	
 	std::string user_input;
 	
@@ -380,8 +418,7 @@ void sccan_point_pair_handler::interaction(){
 	}
 	//==================================================================
 	if(
-	valid_user_input.compare(key_show_star_position_indicator_image)
-	==0)
+	valid_user_input.compare(key_show_star_position_indicator_image)==0)
 	{
 		display_star_position_indicator_image();
 	}
@@ -390,10 +427,25 @@ void sccan_point_pair_handler::interaction(){
 		reset_exposure_times();
 	}	
 	//==================================================================
+	if(valid_user_input.compare(
+	key_modify_star_cam_desired_max_rel_respone)==0){
+		star_camera_desired_max_relative_camera_response = 
+		ask_user_for_non_zero_float(
+		"enter new relative star camera response (0,1)",0.01,0.99);
+	}
+	//==================================================================
+	if(valid_user_input.compare(
+	key_modify_refl_cam_desired_max_rel_respone)==0){
+		reflector_camera_desired_max_relative_camera_response = 
+		ask_user_for_non_zero_float(
+		"enter new relative reflector camera response (0,1)",0.01,0.99);
+	}
+	//==================================================================
 }while(flag_user_wants_to_acquire_sccan_points);	
 }
 //======================================================================
-void sccan_point_pair_handler::update_list_of_runs_in_current_directory(){
+void sccan_point_pair_handler::
+update_list_of_runs_in_current_directory(){
 	
 	list_of_sccan_points_in_directory.clear();
 	// create list of all possible files in directory
@@ -429,7 +481,8 @@ void sccan_point_pair_handler::update_list_of_runs_in_current_directory(){
 	}
 }
 //======================================================================
-void sccan_point_pair_handler::disp_list_of_sccan_points_in_current_directory(){
+void sccan_point_pair_handler::
+disp_list_of_sccan_points_in_current_directory(){
 	std::stringstream out;
 	out<<"list of "<<list_of_sccan_points_in_directory.size();
 	out<<" sccan_points in current directory:"<<std::endl;
@@ -443,7 +496,8 @@ void sccan_point_pair_handler::disp_list_of_sccan_points_in_current_directory(){
 	std::cout<<out.str();
 }
 //======================================================================
-bool sccan_point_pair_handler::is_string_a_sccan_run_config(std::string line){
+bool sccan_point_pair_handler::
+is_string_a_sccan_run_config(std::string line){
 	
 	if(verbosity){
 		std::cout<<"sccan_point_pair_handler -> ";
@@ -531,7 +585,8 @@ bool sccan_point_pair_handler::is_string_a_sccan_run_config(std::string line){
 	if(state==24){return true;}else{return false;};
 }
 //======================================================================
-void sccan_point_pair_handler::update_star_position_indicator_image(){
+void sccan_point_pair_handler::
+update_star_position_indicator_image(){
 	//overwrite image to zeros
 	star_position_indicator_image.image_matrix = cv::Mat::zeros(
 	star_position_indicator_image.image_matrix.rows,
@@ -544,13 +599,15 @@ void sccan_point_pair_handler::update_star_position_indicator_image(){
 	cv::Scalar(255,128,128)); //BGR
 }
 //======================================================================
-void sccan_point_pair_handler::display_star_position_indicator_image(){
+void sccan_point_pair_handler::
+display_star_position_indicator_image(){
 	update_star_position_indicator_image();
 	star_position_indicator_image.disp_simple_image
 	("star position indicator image");
 }
 //======================================================================
-void sccan_point_pair_handler::update_list_of_star_positions(){
+void sccan_point_pair_handler::
+update_list_of_star_positions(){
 	
 	if(verbosity){
 		std::cout<<"sccan_point_pair_handler -> ";
@@ -592,7 +649,8 @@ void sccan_point_pair_handler::update_list_of_star_positions(){
 	
 }
 //======================================================================
-void sccan_point_pair_handler::reset_exposure_times(){
+void sccan_point_pair_handler::
+reset_exposure_times(){
 	if(verbosity){
 		std::cout<<"sccan_point_pair_handler -> ";
 		std::cout<<"reset_exposure_times() -> ";
@@ -603,7 +661,8 @@ void sccan_point_pair_handler::reset_exposure_times(){
 	reflector_camera_last_good_exposure_time_in_ms = 100.0;
 }
 //======================================================================
-void sccan_point_pair_handler::update_status_display
+void sccan_point_pair_handler::
+update_status_display
 (sccan_point_pair *pointer_to_current_sccan_point){
 	
 	int number_of_lines_of_status_display_for_sccan_point_taking = 480;
@@ -685,12 +744,13 @@ void sccan_point_pair_handler::update_status_display
 	}
 }
 //======================================================================
-int sccan_point_pair_handler::get_number_of_sccan_points_in_current_directory(){
+int sccan_point_pair_handler::
+get_number_of_sccan_points_in_current_directory(){
 	return list_of_sccan_points_in_directory.size();
 }
 //======================================================================
-std::string sccan_point_pair_handler::get_sccan_point_pair_name_at(
-int position_of_sccan_point_pair_name){
+std::string sccan_point_pair_handler::
+get_sccan_point_pair_name_at(int position_of_sccan_point_pair_name){
 	if(position_of_sccan_point_pair_name>
 	list_of_sccan_points_in_directory.size()){
 		return "";
@@ -700,7 +760,8 @@ int position_of_sccan_point_pair_name){
 	}
 }
 //======================================================================
-void sccan_point_pair_handler::toggle_verbosity(){
+void sccan_point_pair_handler::
+toggle_verbosity(){
 	verbosity = !verbosity;
 	
 	list_of_star_positions_of_all_points_in_directory.
