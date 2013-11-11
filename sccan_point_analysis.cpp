@@ -280,7 +280,12 @@ interaction(){
 	}
 	//==================================================================
 	if(valid_user_input.compare(key_draw_all_mirror_response_maps)==0){
-		//draw_all_mirror_light_flux_response_maps();
+			
+		for(uint mirror_it=0;
+		mirror_it<get_number_of_mirrors();
+		mirror_it++){
+			draw_mirror_response(mirror_it);
+		}
 	}
 	//==================================================================
 }while(flag_user_wants_to_analyse);
@@ -629,5 +634,212 @@ std::vector<double> x,std::vector<double> weights){
 	}
 	
 	return sqrt(one_over_size_minus_one*sum);
+}
+//======================================================================
+void sccan_point_analysis::
+draw_mirror_response(uint mirror_iterator){
+	
+	if(get_number_of_sccan_points()<1){
+		std::cout << "sccan_point_analysis -> ";
+		std::cout << "draw_mirror_response() -> ";
+		std::cout << "no sccan points in sccan matrix !";
+		std::cout << std::endl;
+		return;
+	}
+	
+	if(get_number_of_mirrors()<1){
+		std::cout << "sccan_point_analysis -> ";
+		std::cout << "draw_mirror_response() -> ";
+		std::cout << "no mirrors in sccan matrix !";
+		std::cout << std::endl;
+		return;
+	}
+	
+	//==================================================================
+	// filename
+	//==================================================================
+		
+	std::string filename_extension;
+	filename_extension = ".eps";
+	
+	std::stringstream plot_file_name;
+	plot_file_name << "mirror_ID" <<
+	sccan_matrix.at(0).at(mirror_iterator)->get_mirror_ID();
+	plot_file_name << "_response_map";
+	plot_file_name << filename_extension;
+	
+	if(sccan_point_analysis_verbosity){
+		std::cout << "sccan_point_analysis -> ";
+		std::cout << "draw_mirror_response() -> ";
+		std::cout << "filename = ";
+		std::cout << plot_file_name.str();
+		std::cout << std::endl;
+	}
+
+	//==================================================================
+	// prepare data for plotting
+	//==================================================================
+	
+	mglData rel_poi_dir_of_star_x_in_deg(sccan_matrix.size());
+	mglData rel_poi_dir_of_star_y_in_deg(sccan_matrix.size());
+	mglData mirror_response(sccan_matrix.size());
+	
+	for(
+	uint sccan_point_iterator=0;
+	sccan_point_iterator<sccan_matrix.size();
+	sccan_point_iterator++){
+	
+		rel_poi_dir_of_star_x_in_deg.a[ sccan_point_iterator ] = 
+		(360.0/(2.0*M_PI)) *  
+		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
+		get_star_position_relative_to_pointing_direction().
+		direction_in_x_in_radiant;
+	
+		rel_poi_dir_of_star_y_in_deg.a[ sccan_point_iterator ] = 
+		(360.0/(2.0*M_PI)) * 
+		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
+		get_star_position_relative_to_pointing_direction().
+		direction_in_y_in_radiant;
+		
+		mirror_response.a[ sccan_point_iterator ] = 
+		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
+		get_normalized_light_flux();
+	}
+	//==================================================================	
+	// fit 2D gaussian
+	//==================================================================	
+	mglGraph gr;
+	
+	mreal ini[5] = {mirror_response.Maximal(),0,10,0,10};
+	mglData Ini(5,ini);
+
+	mglData fit_result = gr.FitS(
+	rel_poi_dir_of_star_x_in_deg,
+	rel_poi_dir_of_star_y_in_deg,
+	mirror_response,
+	"a*(exp( -( ((x-u)*(x-u))/(2*v*v) + ((y-n)*(y-n))/(2*m*m) ) ))",
+	"auvmn",
+	Ini);
+	
+	std::cout<<"Fitting mirror norm "<<fit_result[0]<<std::endl;
+	std::cout<<"Fit x pos "<<fit_result[1]<<" pm "<<fit_result[2]<<std::endl;
+	std::cout<<"Fit y pos "<<fit_result[3]<<" pm "<<fit_result[4]<<std::endl;
+	
+	mglData best_x = fit_result[1];
+	mglData best_y = fit_result[3];
+	mglData best_z = fit_result[0]*(
+	exp( -( 
+	(best_x[0]-fit_result[1])*(best_x[0]-fit_result[1])/(2.0*fit_result[2]) + 
+	(best_y[0]-fit_result[3])*(best_y[0]-fit_result[3])/(2.0*fit_result[4]) ) 
+	)
+	);
+	//==================================================================	
+	// calculate
+	//==================================================================	
+	pointing_direction best_dir = 
+	calc_poining_when_mirror_is_brightest(
+	mirror_iterator);
+	
+	mglData bM_x(1);
+	mglData bM_y(1);
+	mglData bM_z(1);
+		
+	bM_x[0] = best_dir.direction_in_x_in_radiant*(360.0/(2.0*M_PI));
+	bM_y[0] = best_dir.direction_in_y_in_radiant*(360.0/(2.0*M_PI));
+	bM_z[0] = mirror_response.Maximal();
+
+	std::cout<<"mean x pos "<<bM_x[0]<<std::endl;
+	std::cout<<"mean y pos "<<bM_y[0]<<std::endl;
+	std::cout<<"mean response "<<bM_z[0]<<std::endl;
+	//==================================================================
+	// plotting response map
+	//==================================================================
+	std::stringstream plot_heading;
+	plot_heading << "Mirror ID ";
+	plot_heading << sccan_matrix.at(0).at(mirror_iterator)->
+	get_mirror_ID();
+	plot_heading << " response map";
+	
+	double x_range = 5.0;
+	double y_range = 5.0;
+	
+	mglData xy_hist = gr.Hist(
+	rel_poi_dir_of_star_x_in_deg,
+	rel_poi_dir_of_star_y_in_deg,
+	mirror_response);	
+	
+	gr.Title(plot_heading.str().c_str());
+	//====================================
+	gr.SubPlot(1,2,0);	
+	gr.Rotate(50,60);
+
+	gr.SetRanges(
+	rel_poi_dir_of_star_x_in_deg.Minimal()*1.1,
+	rel_poi_dir_of_star_x_in_deg.Maximal()*1.1,
+	rel_poi_dir_of_star_y_in_deg.Minimal()*1.1,
+	rel_poi_dir_of_star_y_in_deg.Maximal()*1.1,
+	0.0,mirror_response.Maximal());
+	
+	gr.Axis();
+	gr.Label('x',"x direction [deg]",0);
+	gr.Label('y',"y direction [deg]",0);
+	gr.Label('z',"mirror response [1]",0);
+	gr.Box(); 
+	gr.Light(true);
+	
+	gr.ContV(xy_hist);
+	gr.ContF(xy_hist);
+	gr.Cont(xy_hist,"k");
+	// best fit result
+	//~ gr.Stem(
+	//~ best_x,
+	//~ best_y,
+	//~ best_z,
+	//~ "rx");
+	gr.Stem(
+	bM_x,
+	bM_y,
+	bM_z,
+	"rx");
+	
+		
+	
+	//====================================
+	gr.SubPlot(1,2,1);
+	gr.Rotate(50,120);
+	
+	gr.SetRanges(
+	rel_poi_dir_of_star_x_in_deg.Minimal()*1.1,
+	rel_poi_dir_of_star_x_in_deg.Maximal()*1.1,
+	rel_poi_dir_of_star_y_in_deg.Minimal()*1.1,
+	rel_poi_dir_of_star_y_in_deg.Maximal()*1.1,
+	0.0,mirror_response.Maximal());
+	
+	gr.Axis();
+	gr.Label('x',"x direction [deg]",0);
+	gr.Label('y',"y direction [deg]",0);
+	gr.Label('z',"mirror response [1]",0);
+	gr.Box(); 
+	gr.Light(true);
+	
+	gr.ContV(xy_hist);
+	gr.ContF(xy_hist);
+	gr.Cont(xy_hist,"k");
+
+	gr.WriteFrame(plot_file_name.str().c_str());	// save it
+}
+//======================================================================
+uint sccan_point_analysis::
+get_number_of_mirrors(){
+	if(sccan_matrix.size()<1){
+		return 0;
+	}else{
+		return sccan_matrix.at(0).size();
+	}
+}
+//======================================================================
+uint sccan_point_analysis::
+get_number_of_sccan_points(){
+	return sccan_matrix.size();
 }
 //======================================================================

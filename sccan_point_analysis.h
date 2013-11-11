@@ -17,6 +17,10 @@
 // matplotpp
 //#include "Python.h"
 
+// plotting
+#include <mgl2/mgl.h>
+//#include <mgl2/window.h>
+
 //=================================
 class sccan_point_analysis 		:public user_interaction{
 	public:
@@ -75,5 +79,10 @@ calculate_pointing_direction_of_telescope_for_max_mirror_response();
 pointing_direction calc_poining_when_mirror_is_brightest(
 uint mirror_iterator);
 //======================================================================
+void draw_mirror_response(uint mirror_iterator);
+//======================================================================
+uint get_number_of_mirrors();
+//======================================================================
+uint get_number_of_sccan_points();
 };
 #endif // __SCAAN_POINT_ANALYSIS_H_INCLUDED__
