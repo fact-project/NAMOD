@@ -31,7 +31,7 @@ uint get_mirror_ID();
 //======================================================================
 void set_normalized_light_flux(double new_normalized_light_flux);
 //======================================================================
-double get_normalized_light_flux();
+double get_normalized_light_flux()const;
 //======================================================================
 void set_star_position_relative_to_pointing_direction
 (pointing_direction new_star_position_relative_to_pointing_direction);

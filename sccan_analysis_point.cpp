@@ -53,7 +53,7 @@ void sccan_analysis_point::set_normalized_light_flux(double new_normalized_light
 	normalized_light_flux = new_normalized_light_flux;
 }
 //======================================================================
-double sccan_analysis_point::get_normalized_light_flux(){
+double sccan_analysis_point::get_normalized_light_flux()const{
 	if(verbosity){
 		std::cout<<"sccan_analysis_point -> ";
 		std::cout<<"get_normalized_light_flux() -> ";

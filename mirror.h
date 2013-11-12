@@ -9,6 +9,7 @@
 //=================================
 // included dependencies
 #include <vector>
+#include "pointing_direction.h"
 #include "programm_verbosity.h"
 #include "simple_image.h"
 
@@ -42,9 +43,10 @@ public:
 	double manipulation_revolutions_of_third_tripod_leg_in_revs;
 
 	// missalignment
+	pointing_direction MirrorMisalignmentDirection;
 	bool 	flag_misalignment_angles_have_been_calculated;
-	double 	missalignment_angle_in_x_in_rad;
-	double 	missalignment_angle_in_y_in_rad;
+	//~ double 	missalignment_angle_in_x_in_rad;
+	//~ double 	missalignment_angle_in_y_in_rad;
 	
 	// mask sccan_image
 	bool 				flag_mask_has_been_initialized;
@@ -87,6 +89,13 @@ list_of_pixel_positions* get_pointer_to_list_of_Points_inside_mirror_polygon();
 simple_image highlight_mirror_in_reflector_image
 (simple_image* pointer_to_reflector_image);
 //======================================================================
+std::string get_manipulation_instructions(pointing_direction
+direction_of_star_relative_to_telescope_for_brighteset_mirror_response);
+//======================================================================
+void calculate_mirror_missalignment(pointing_direction
+DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse);
+//======================================================================
+void calculate_bolt_manipulation_distances();
+//======================================================================
 };
-
 #endif // __MIRROR_H_INCLUDED__ 

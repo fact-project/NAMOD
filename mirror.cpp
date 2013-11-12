@@ -66,9 +66,11 @@ std::string mirror::get_string(){
 	if(flag_misalignment_angles_have_been_calculated){
 	out<<"| mirror misalignment: "<<std::endl;
 	out<<"| missalignment angle in x: ";
-	out<<missalignment_angle_in_x_in_rad<<" [rad]"<<std::endl;
+	out<<MirrorMisalignmentDirection.
+	get_x_tilt_prompt_in_deg_min_sec()<<std::endl;
 	out<<"| missalignment angle in y: ";
-	out<<missalignment_angle_in_y_in_rad<<" [rad]"<<std::endl;
+	out<<MirrorMisalignmentDirection.
+	get_y_tilt_prompt_in_deg_min_sec()<<std::endl;
 	}else{
 	out<<"| mirror misalignment has not been calculated yet."<<std::endl;
 	}
@@ -261,7 +263,7 @@ cv::Size image_size_of_reflector_camera){
 	
 	const cv::Point* ppt[1] = { polygon[0] };
 	
-	int npt[] = {list_of_points_defining_mirror_polygon.size()};
+	int npt[] = {int(list_of_points_defining_mirror_polygon.size())};
 	
 	if(verbosity){
 		std::cout<<"mirror -> create_polygon_mask() -> ";
@@ -356,4 +358,198 @@ simple_image mirror::highlight_mirror_in_reflector_image
 	return highlited_image_roi;
 }
 //======================================================================
+std::string mirror::get_manipulation_instructions(pointing_direction
+DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
+	
+	calculate_mirror_missalignment(
+	DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse);
+	
+	if(flag_misalignment_angles_have_been_calculated){
+		
+		if(flag_manipulations_have_been_calculated){
+			
+			std::stringstream manual;
+			manual<<"ID "<<mirror_ID<<"\t";
+			manual<<"Bolt 1: ";
+			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs;
+			manual<<"[revs]/";
+			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs
+			*360.0;
+			manual<<"[deg] \t,";
 
+			manual<<"Bolt 2: ";
+			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs;
+			manual<<"[revs]/";
+			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs
+			*360.0;
+			manual<<"[deg] \t,";
+
+			manual<<"Bolt 3: ";
+			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs;
+			manual<<"[revs]/";
+			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs
+			*360.0;
+			manual<<"[deg]";
+			manual<<"\n";
+			return manual.str();
+		
+		}else{
+			
+			std::cout<<"mirror "<<mirror_ID;
+			std::cout<<"-> get_manipulation_instructions() -> ";
+			std::cout<<"manipulation distances/revolutions ";
+			std::cout<<"have not been calculated yet!";
+			std::cout<<"\n";
+			return "manipulation distances/revolutions have not been calculated yet!\n";
+		}
+	
+	}else{
+		
+		std::cout<<"mirror "<<mirror_ID;
+		std::cout<<"-> get_manipulation_instructions() -> ";
+		std::cout<<"misalignment angles have not been calculated yet!";
+		std::cout<<"\n";
+		return "misalignment angles have not been calculated yet!\n";
+	}
+}
+//======================================================================
+void mirror::calculate_mirror_missalignment(pointing_direction
+DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
+	
+	MirrorMisalignmentDirection =
+	DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse*0.5;
+
+	flag_misalignment_angles_have_been_calculated = true;
+}
+//======================================================================
+void mirror::calculate_bolt_manipulation_distances(){
+	
+		//~ if(flag_misalignment_angles_have_been_calculated)
+		//~ {
+			//~ // WARNINGS
+			//~ if(missalignment_angle_in_x_in_rad > M_PI/18){
+				//~ cout<<"calculate_bolt_manipulation_distances()->";
+				//~ cout<<"WARNING missalignment_angle_in_x_in_rad";
+				//~ cout<<" is above approximation limit!";
+			//~ }
+			//~ if(missalignment_angle_in_y_in_rad > M_PI/18){
+				//~ cout<<"calculate_bolt_manipulation_distances()->";
+				//~ cout<<"WARNING missalignment_angle_in_y_in_rad";
+				//~ cout<<" is above approximation limit!";
+			//~ }
+			//~ if(verbosity_mirror){
+				//~ cout<<" __calculate_bolt_manipulation_distances(";
+				//~ cout<<missalignment_angle_in_x_in_rad<<",";
+				//~ cout<<missalignment_angle_in_y_in_rad<<")->"<<endl;
+			//~ }
+			//~ /** approximation
+			 //~ lets assume the initial mirror orientation is always zero in x and y
+			 //~ so the initial surface normal vector of the center of the mirror
+			 //~ is \vec{n}=(0,0,1)^T
+			 //~ **/
+			//~ cl_vec3D ez; ez.set_unit_ez();
+			//~ cl_vec3D old_mirror_x; old_mirror_x.set_unit_ex();
+			//~ cl_vec3D old_mirror_y; old_mirror_y.set_unit_ey();
+			 //~ 
+			//~ cl_vec3D new_mirror_x = 
+			//~ old_mirror_x + ez*missalignment_angle_in_y_in_rad;
+			//~ new_mirror_x = new_mirror_x/new_mirror_x.norm2();
+			//~ 
+			//~ cl_vec3D new_mirror_y = 
+			//~ old_mirror_y + ez*missalignment_angle_in_x_in_rad;
+			//~ new_mirror_y = new_mirror_y/new_mirror_y.norm2();
+			//~ 
+			//~ cl_vec3D new_mirror_surface_normal = 
+			//~ new_mirror_x.cross(new_mirror_y);
+			//~ 
+			//~ if(verbosity_mirror){
+				//~ cout<<"| new pseudo mirror plane x vector     : ";
+				//~ cout<<new_mirror_x.get_string()<<endl;
+				//~ cout<<"| new pseudo mirror plane y vector     : ";
+				//~ cout<<new_mirror_y.get_string()<<endl;
+				//~ cout<<"| new pseudo mirror plane normal vector: ";
+				//~ cout<<new_mirror_surface_normal.get_string()<<endl;
+			//~ }	
+			//~ 
+			//~ /// calculate intersection parameter of line 
+			//~ /// tripod_orientation_i_in_rad + ez * lambda: lambda.
+			//~ 
+			//~ manipulation_distance_of_first_tripod_leg_in_m = 
+			//~ (position_of_first_tripod_leg*(-1.0))*
+			//~ new_mirror_surface_normal/
+			//~ (ez*new_mirror_surface_normal);
+//~ 
+			//~ manipulation_distance_of_second_tripod_leg_in_m = 
+			//~ (position_of_second_tripod_leg*(-1.0))*
+			//~ new_mirror_surface_normal/
+			//~ (ez*new_mirror_surface_normal);
+			//~ 
+			//~ manipulation_distance_of_third_tripod_leg_in_m = 
+			//~ (position_of_third_tripod_leg*(-1.0))*
+			//~ new_mirror_surface_normal/
+			//~ (ez*new_mirror_surface_normal);
+			//~ 
+			//~ if(verbosity_mirror){
+				//~ cout<<endl;
+				//~ cout<<"| manipulation distance 1: ";
+				//~ cout.precision(10);
+				//~ cout<<manipulation_distance_of_first_tripod_leg_in_m;
+				//~ cout<<" [m]"<<endl;
+				//~ cout<<"| manipulation distance 2: ";
+				//~ cout.precision(10);
+				//~ cout<<manipulation_distance_of_second_tripod_leg_in_m;
+				//~ cout<<" [m]"<<endl;	
+				//~ cout<<"| manipulation distance 3: ";
+				//~ cout.precision(10);
+				//~ cout<<manipulation_distance_of_third_tripod_leg_in_m;
+				//~ cout<<" [m]"<<endl;
+				//~ cout<<"|________________________________________"<<endl;
+		//~ }
+		//~ }else{
+			//~ cout<<"Mirror "<<int_mirror_ID;
+			//~ cout<<"->calculate_bolt_manipulation_distances()->";
+			//~ cout<<"misalignment angles have not been calculated yet!";	
+			//~ cout<<endl;		
+		//~ }
+	//~ }	
+	
+	if(flag_misalignment_angles_have_been_calculated){
+		
+		// WARNINGS
+		if(MirrorMisalignmentDirection.
+		direction_in_x_in_radiant > (2.0*M_PI/360.0)*10.0){
+			std::cout<<"calculate_bolt_manipulation_distances()->";
+			std::cout<<"WARNING missalignment_angle_in_x_in_rad";
+			std::cout<<" is above approximation limit 10deg!\n";
+		}
+		if(MirrorMisalignmentDirection.
+		direction_in_y_in_radiant > (2.0*M_PI/360.0)*10.0){
+			std::cout<<"calculate_bolt_manipulation_distances()->";
+			std::cout<<"WARNING missalignment_angle_in_y_in_rad";
+			std::cout<<" is above approximation limit 10deg!\n";
+		}
+		if(verbosity){
+			std::cout<<" __calculate_bolt_manipulation_distances(x:";
+			std::cout<<MirrorMisalignmentDirection.
+			get_x_tilt_prompt_in_deg_min_sec()<<",y:";
+			std::cout<<MirrorMisalignmentDirection.
+			get_y_tilt_prompt_in_deg_min_sec()<<")\n";
+		}
+		
+		tripod_orientation_z_in_rad;
+		manipulation_distance_of_first_tripod_leg_in_m;
+		manipulation_distance_of_second_tripod_leg_in_m;
+		manipulation_distance_of_third_tripod_leg_in_m;
+
+
+		flag_manipulations_have_been_calculated = true;
+		
+	}else{
+		std::cout<<"mirror "<<mirror_ID;
+		std::cout<<"-> calculate_bolt_manipulation_distances() -> ";
+		std::cout<<"misalignment angles have not been calculated yet!";
+		std::cout<<"\n";
+	}
+	
+}
+//======================================================================

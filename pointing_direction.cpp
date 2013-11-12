@@ -76,3 +76,16 @@ get_angle_text_prompt_in_deg_arc_min_arc_sec(double angle_in_rad){
 	out<<arc_sec<<"sec";
 	return out.str();
 }
+//======================================================================
+pointing_direction pointing_direction::operator*(
+const double ScaleFactor) const{
+	pointing_direction temp;
+	
+	temp.direction_in_x_in_radiant = 
+	ScaleFactor*direction_in_x_in_radiant;
+	
+	temp.direction_in_y_in_radiant = 
+	ScaleFactor*direction_in_y_in_radiant;
+	
+	return temp;
+}

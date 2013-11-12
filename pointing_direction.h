@@ -33,6 +33,8 @@ std::string get_x_tilt_prompt_in_deg();
 //======================================================================
 std::string get_y_tilt_prompt_in_deg();
 //======================================================================
+pointing_direction operator*(const double ScaleFactor)const;
+//======================================================================
 private:
 std::string get_angle_text_prompt_in_deg_arc_min_arc_sec
 (double angle_in_rad);
