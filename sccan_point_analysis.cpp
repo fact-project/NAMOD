@@ -18,6 +18,8 @@ reflector* new_pointer_to_reflector){
 	pointer_to_sccan_point_pair_handler = 
 	new_pointer_to_sccan_point_pair_handler;
 	
+	normalize_mirror_response = true;
+	
 	pointer_to_reflector = new_pointer_to_reflector;
 	
 	//pointer_to_star_camera = new_pointer_to_star_camera;
@@ -211,6 +213,16 @@ get_analysis_prompt(){
 	out<<make_nice_line_with_dots
 	("| number of mirrors",info.str());
 	
+	// normalize_mirror_response
+	info.str("");
+	if(normalize_mirror_response){
+		info<<"TRUE";
+	}else{
+		info<<"FALSE";
+	}
+	out<<make_nice_line_with_dots
+	("| toggle mirror response normalizing: ",info.str());	
+	
 	// horizontal line 
 	out<<"|";
 	out<<get_line_of_specific_character("_",command_line_columns-1);
@@ -232,6 +244,10 @@ interaction(){
 	std::string key_analyse_sccan_point_matrix  ="a";
 	add_control(key_analyse_sccan_point_matrix,
 	"analyse sccan point matrix");	
+	
+	std::string key_toggle_light_flux_normalizing  ="n";
+	add_control(key_toggle_light_flux_normalizing,
+	"toggle mirror response normalizing");	
 	
 	std::string key_draw_all_mirror_response_maps  ="draw";
 	add_control(key_draw_all_mirror_response_maps,
@@ -288,6 +304,10 @@ interaction(){
 		}
 	}
 	//==================================================================
+	if(valid_user_input.compare(key_toggle_light_flux_normalizing)==0){
+		normalize_mirror_response = ! normalize_mirror_response;	
+	}
+	//==================================================================
 }while(flag_user_wants_to_analyse);
 }
 //======================================================================
@@ -316,73 +336,48 @@ uint mirror_iterator){
 	}
 	
 	std::vector<sccan_analysis_point*>::iterator 
+	iterator_to_brightest_sccan_point; 
 	
-	iterator_to_brightest_sccan_point = max_element(
-	list_of_sccan_points_of_specific_mirror.begin(),
-	list_of_sccan_points_of_specific_mirror.end()
-	);
+	if(normalize_mirror_response){
 	
-	/*
-	double telescope_x_direction_in_rad_wighted_with_flux = 0.0;
-	double telescope_y_direction_in_rad_wighted_with_flux = 0.0;
-	double sum_of_all_mirror_responses_in_bulbs = 0.0;
-
-	//==========================================================
-	//for all sccan points of this mirror
-	//==========================================================
-	
-	std::vector<double> dir_x;
-	std::vector<double> dir_y;	
-	std::vector<double> weights;
-
-	for(
-	int sccan_point_itterator = 0;
-	sccan_point_itterator<sccan_matrix.size();
-	sccan_point_itterator++)
-	{	
-		//flux
-		weights.push_back(	
-			sccan_matrix.
-			at(sccan_point_itterator).
-			at(mirror_iterator)->
-			get_normalized_light_flux()
+		iterator_to_brightest_sccan_point = max_element(
+		list_of_sccan_points_of_specific_mirror.begin(),
+		list_of_sccan_points_of_specific_mirror.end(),
+		compare_normalized_flux
 		);
 		
-		// x
-		dir_x.push_back(
-			sccan_matrix.
-			at(sccan_point_itterator).
-			at(mirror_iterator)->
-			get_star_position_relative_to_pointing_direction().
-			direction_in_x_in_radiant
-		);
+
 		
-		// y
-		dir_y.push_back(
-			sccan_matrix.
-			at(sccan_point_itterator).
-			at(mirror_iterator)->
-			get_star_position_relative_to_pointing_direction().
-			direction_in_y_in_radiant
+	}else{
+		
+		iterator_to_brightest_sccan_point = max_element(
+		list_of_sccan_points_of_specific_mirror.begin(),
+		list_of_sccan_points_of_specific_mirror.end(),
+		compare_only_mirror_flux
 		);
 		
 	}
-	*/
-	//~ double mean_dir_x = 0.0;//calc_mean_using_wights(dir_x,weights);
-	//~ double mean_dir_y = 0.0;//calc_mean_using_wights(dir_y,weights);	
-	//~ double std_dev_dir_x = 0.0;
-	//~ //calc_standart_deviation_using_weights(dir_x,weights);	
-	//~ double std_dev_dir_y = 0.0;
-	//~ //calc_standart_deviation_using_weights(dir_y,weights);	
-	//~ 
-	//~ std::cout<<"sccan_point_analysis -> ";
-	//~ std::cout<<"calc -> ";
-	//~ std::cout<<"mirror ID ";
-	//~ std::cout<<sccan_matrix.at(0).at(mirror_iterator)->
-	//~ get_mirror_ID()<<std::endl;
-	//~ std::cout<<"mean x dir: "<<mean_dir_x<<" pm std_dev "<<std_dev_dir_x<<std::endl;
-	//~ std::cout<<"mean y dir: "<<mean_dir_y<<" pm std_dev "<<std_dev_dir_y<<std::endl;
 	
+	if(sccan_point_analysis_verbosity){
+		std::cout<<"sccan_point_analysis -> ";
+		std::cout<<"PointingDirectionOfStarAtMaxMirrorResponse() -> ";
+		std::cout<<"mirror ID "<<
+		sccan_matrix.at(0).at(mirror_iterator)->get_mirror_ID();
+		std::cout<<" -> ";
+		std::cout<<"light flux normalizing = ";
+		if(normalize_mirror_response)
+		{std::cout<<"TRUE";}else{std::cout<<"FALSE";}
+		std::cout<<" -> brightest star direction x:";
+		std::cout<<(*iterator_to_brightest_sccan_point)->
+		get_star_position_relative_to_pointing_direction().
+		get_x_tilt_prompt_in_deg_min_sec();
+		std::cout<<", y:";
+		std::cout<<(*iterator_to_brightest_sccan_point)->
+		get_star_position_relative_to_pointing_direction().
+		get_x_tilt_prompt_in_deg_min_sec();
+		std::cout<<std::endl;
+	}	
+		
 	return (*iterator_to_brightest_sccan_point)->
 	get_star_position_relative_to_pointing_direction();
 }
@@ -452,9 +447,15 @@ draw_mirror_response(uint mirror_iterator){
 		get_star_position_relative_to_pointing_direction().
 		direction_in_y_in_radiant;
 		
-		mirror_response.a[ sccan_point_iterator ] = 
-		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
-		get_normalized_light_flux();
+		if(normalize_mirror_response){
+			mirror_response.a[ sccan_point_iterator ] = 
+			sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
+			get_normalized_light_flux();
+		}else{
+			mirror_response.a[ sccan_point_iterator ] = 
+			sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
+			get_mirror_light_flux();		
+		}
 	}
 	//==================================================================	
 	// fit 2D gaussian
@@ -536,7 +537,12 @@ draw_mirror_response(uint mirror_iterator){
 	gr.Axis();
 	gr.Label('x',"x direction [deg]",0);
 	gr.Label('y',"y direction [deg]",0);
-	gr.Label('z',"mirror response [1]",0);
+	
+	if(normalize_mirror_response){
+		gr.Label('z',"normalized mirror response [1]",0);
+	}else{
+		gr.Label('z',"mirror response [bulbs]",0);
+	}
 	gr.Box(); 
 	gr.Light(true);
 	
@@ -592,19 +598,6 @@ get_number_of_mirrors(){
 uint sccan_point_analysis::
 get_number_of_sccan_points(){
 	return sccan_matrix.size();
-}
-//======================================================================
-bool sccan_point_analysis::
-operator() (
-const sccan_analysis_point &one,
-const sccan_analysis_point &two){
-	
-	return (
-	one.get_normalized_light_flux()
-	<
-	two.get_normalized_light_flux()
-	);
-
 }
 //======================================================================
 void sccan_point_analysis::

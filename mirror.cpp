@@ -17,7 +17,7 @@ void mirror::initialize(uint new_mirror_ID,bool new_verbosity){
 	mirror_ID = new_mirror_ID;
 	
 	flag_misalignment_angles_have_been_calculated = false;
-	flag_manipulations_have_been_calculated = false;
+	flag_manipulation_distances_have_been_calculated = false;
 	tripod_orientation_z_in_rad =0.0;
 	
 	// mask sccan_image
@@ -35,12 +35,22 @@ void mirror::initialize(uint new_mirror_ID,bool new_verbosity){
 //======================================================================
 std::string mirror::get_string(){
 	std::stringstream out; out.str("");
-	out<<"Mirror ID: "<<mirror_ID<<std::endl;
-	out<<"| tripod rotation in z: "<<tripod_orientation_z_in_rad;
-	out<<" [rad]"<<std::endl;
-	out<<"| number of polygon knots: ";
-	out<<list_of_points_defining_mirror_polygon.size()<<std::endl;
-	out<<"| polygon list: ";
+	out<<" _________________________________________________________\n";
+	out<<"| Mirror ID: "<<mirror_ID<<std::endl;
+	out<<"|\n";
+	out<<"|  _tripod________________________________________________\n";
+	out<<"| | tripod rotation in z: "<<tripod_orientation_z_in_rad<<"rad\n";
+	out<<"| | tripod radius: "<<tripod_radius_in_m<<"m\n";
+	out<<"| | bolt pitch  : "<<pitch_of_bolt_in_m_per_revolution<<"m/revs"<<"\n";
+	out<<"| | 1st leg pos : "<<position_of_first_tripod_leg.get_string()<<"\n";	
+	out<<"| | 2st leg pos : "<<position_of_second_tripod_leg.get_string()<<"\n";
+	out<<"| | 3st leg pos : "<<position_of_third_tripod_leg.get_string()<<"\n";
+	out<<"| |_______________________________________________________\n";
+	out<<"|\n";
+	out<<"|  _polygon_______________________________________________\n";
+	out<<"| |\n";
+	out<<"| | number of points "<<list_of_points_defining_mirror_polygon.size()<<std::endl;
+	out<<"| | polygon list: ";
 	if(list_of_points_defining_mirror_polygon.size()==0){
 		out<<"empty list";
 	}else{
@@ -52,29 +62,31 @@ std::string mirror::get_string(){
 			out<<list_of_points_defining_mirror_polygon.at(knot).x<<"|";
 			out<<list_of_points_defining_mirror_polygon.at(knot).y<<")";
 		}
-		out<<" [pixels]";
+		out<<" [pixels]\n";
 	}
-	out<<std::endl;	
 	if(flag_mask_has_been_initialized)
 	{
-	out<<"| mirror mask: "<<std::endl;
-	out<<"| number of pixels in polygon: ";
+	out<<"| | number of pixels in polygon: ";
 	out<<list_of_Points_inside_mirror_polygon.size()<<std::endl;
 	}else{
-	out<<"| mirror mask has not been initialized yet."<<std::endl;
+	out<<"| | mirror mask has not been initialized yet."<<std::endl;
 	}
+	out<<"| |_______________________________________________________\n";
+	out<<"|\n";
+	out<<"|  _misalignment__________________________________________\n";
 	if(flag_misalignment_angles_have_been_calculated){
-	out<<"| mirror misalignment: "<<std::endl;
-	out<<"| missalignment angle in x: ";
+	out<<"| | mirror misalignment: "<<std::endl;
+	out<<"| | missalignment angle in x: ";
 	out<<MirrorMisalignmentDirection.
 	get_x_tilt_prompt_in_deg_min_sec()<<std::endl;
-	out<<"| missalignment angle in y: ";
+	out<<"| | missalignment angle in y: ";
 	out<<MirrorMisalignmentDirection.
 	get_y_tilt_prompt_in_deg_min_sec()<<std::endl;
 	}else{
-	out<<"| mirror misalignment has not been calculated yet."<<std::endl;
+	out<<"| | mirror misalignment has not been calculated yet.\n";
 	}
-	
+	out<<"| |_______________________________________________________\n";
+	out<<"|_________________________________________________________\n";
 	return out.str();
 }	
 //======================================================================
@@ -140,7 +152,8 @@ libconfig::Setting *Mirror_file_handle){
 		// set all mirror properties to default values
 		initialize((uint)new_mirror_ID,verbosity);
 		if(verbosity){
-			std::cout<<"mirror -> import_configuration() -> initialize ID ";
+			std::cout<<"mirror -> import_configuration() -> ";
+			std::cout<<"initialize ID ";
 			std::cout<<new_mirror_ID<<std::endl;
 		}
 	}else{
@@ -155,6 +168,9 @@ libconfig::Setting *Mirror_file_handle){
 			std::cout<<" tripod orientation loaded ";
 			std::cout<<tripod_orientation_z_in_rad<<"rad."<<std::endl;
 		}	
+		
+		init_tripod();
+		
 	}else{
 		flag_mirror_valid = false;
 	}
@@ -230,7 +246,8 @@ void mirror::initialize_list_of_points_inside_mirror_polygon
 	create_list_of_Points_inside_mirror_polygon();
 	if(verbosity){
 		std::cout<<"mirror -> ";
-		std::cout<<"initialize_list_of_points_inside_mirror_polygon()"<<std::endl;
+		std::cout<<"initialize_list_of_points_inside_mirror_polygon()";
+		std::cout<<std::endl;
 	}
 }
 //======================================================================
@@ -257,7 +274,8 @@ cv::Size image_size_of_reflector_camera){
 		if(verbosity){
 			std::cout<<"mirror -> create_polygon_mask()->";
 			std::cout<<"copy Point ("<<polygon[0][point_itterator].x;
-			std::cout<<"|"<<polygon[0][point_itterator].y<<")"<<std::endl;
+			std::cout<<"|"<<polygon[0][point_itterator].y<<")";
+			std::cout<<std::endl;
 		}
 	}
 	
@@ -366,7 +384,11 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	
 	if(flag_misalignment_angles_have_been_calculated){
 		
-		if(flag_manipulations_have_been_calculated){
+		calculate_bolt_manipulation_distances();
+		
+		if(flag_manipulation_distances_have_been_calculated){
+			
+			calculate_bolt_manipulation_revolutions();
 			
 			std::stringstream manual;
 			manual<<"ID "<<mirror_ID<<"\t";
@@ -400,7 +422,12 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			std::cout<<"manipulation distances/revolutions ";
 			std::cout<<"have not been calculated yet!";
 			std::cout<<"\n";
-			return "manipulation distances/revolutions have not been calculated yet!\n";
+			
+			std::stringstream out;
+			out<<"mirror -> get_manipulation_instructions() -> ";
+			out<<"manipulation distances/revolutions have not been ";
+			out<<"calculated yet!\n";
+			return out.str();
 		}
 	
 	}else{
@@ -409,7 +436,11 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 		std::cout<<"-> get_manipulation_instructions() -> ";
 		std::cout<<"misalignment angles have not been calculated yet!";
 		std::cout<<"\n";
-		return "misalignment angles have not been calculated yet!\n";
+		
+		std::stringstream out;
+		out<<"mirror -> get_manipulation_instructions() -> ";
+		out<<"misalignment angles have not been calculated yet!\n";
+		return out.str();
 	}
 }
 //======================================================================
@@ -423,95 +454,6 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 }
 //======================================================================
 void mirror::calculate_bolt_manipulation_distances(){
-	
-		//~ if(flag_misalignment_angles_have_been_calculated)
-		//~ {
-			//~ // WARNINGS
-			//~ if(missalignment_angle_in_x_in_rad > M_PI/18){
-				//~ cout<<"calculate_bolt_manipulation_distances()->";
-				//~ cout<<"WARNING missalignment_angle_in_x_in_rad";
-				//~ cout<<" is above approximation limit!";
-			//~ }
-			//~ if(missalignment_angle_in_y_in_rad > M_PI/18){
-				//~ cout<<"calculate_bolt_manipulation_distances()->";
-				//~ cout<<"WARNING missalignment_angle_in_y_in_rad";
-				//~ cout<<" is above approximation limit!";
-			//~ }
-			//~ if(verbosity_mirror){
-				//~ cout<<" __calculate_bolt_manipulation_distances(";
-				//~ cout<<missalignment_angle_in_x_in_rad<<",";
-				//~ cout<<missalignment_angle_in_y_in_rad<<")->"<<endl;
-			//~ }
-			//~ /** approximation
-			 //~ lets assume the initial mirror orientation is always zero in x and y
-			 //~ so the initial surface normal vector of the center of the mirror
-			 //~ is \vec{n}=(0,0,1)^T
-			 //~ **/
-			//~ cl_vec3D ez; ez.set_unit_ez();
-			//~ cl_vec3D old_mirror_x; old_mirror_x.set_unit_ex();
-			//~ cl_vec3D old_mirror_y; old_mirror_y.set_unit_ey();
-			 //~ 
-			//~ cl_vec3D new_mirror_x = 
-			//~ old_mirror_x + ez*missalignment_angle_in_y_in_rad;
-			//~ new_mirror_x = new_mirror_x/new_mirror_x.norm2();
-			//~ 
-			//~ cl_vec3D new_mirror_y = 
-			//~ old_mirror_y + ez*missalignment_angle_in_x_in_rad;
-			//~ new_mirror_y = new_mirror_y/new_mirror_y.norm2();
-			//~ 
-			//~ cl_vec3D new_mirror_surface_normal = 
-			//~ new_mirror_x.cross(new_mirror_y);
-			//~ 
-			//~ if(verbosity_mirror){
-				//~ cout<<"| new pseudo mirror plane x vector     : ";
-				//~ cout<<new_mirror_x.get_string()<<endl;
-				//~ cout<<"| new pseudo mirror plane y vector     : ";
-				//~ cout<<new_mirror_y.get_string()<<endl;
-				//~ cout<<"| new pseudo mirror plane normal vector: ";
-				//~ cout<<new_mirror_surface_normal.get_string()<<endl;
-			//~ }	
-			//~ 
-			//~ /// calculate intersection parameter of line 
-			//~ /// tripod_orientation_i_in_rad + ez * lambda: lambda.
-			//~ 
-			//~ manipulation_distance_of_first_tripod_leg_in_m = 
-			//~ (position_of_first_tripod_leg*(-1.0))*
-			//~ new_mirror_surface_normal/
-			//~ (ez*new_mirror_surface_normal);
-//~ 
-			//~ manipulation_distance_of_second_tripod_leg_in_m = 
-			//~ (position_of_second_tripod_leg*(-1.0))*
-			//~ new_mirror_surface_normal/
-			//~ (ez*new_mirror_surface_normal);
-			//~ 
-			//~ manipulation_distance_of_third_tripod_leg_in_m = 
-			//~ (position_of_third_tripod_leg*(-1.0))*
-			//~ new_mirror_surface_normal/
-			//~ (ez*new_mirror_surface_normal);
-			//~ 
-			//~ if(verbosity_mirror){
-				//~ cout<<endl;
-				//~ cout<<"| manipulation distance 1: ";
-				//~ cout.precision(10);
-				//~ cout<<manipulation_distance_of_first_tripod_leg_in_m;
-				//~ cout<<" [m]"<<endl;
-				//~ cout<<"| manipulation distance 2: ";
-				//~ cout.precision(10);
-				//~ cout<<manipulation_distance_of_second_tripod_leg_in_m;
-				//~ cout<<" [m]"<<endl;	
-				//~ cout<<"| manipulation distance 3: ";
-				//~ cout.precision(10);
-				//~ cout<<manipulation_distance_of_third_tripod_leg_in_m;
-				//~ cout<<" [m]"<<endl;
-				//~ cout<<"|________________________________________"<<endl;
-		//~ }
-		//~ }else{
-			//~ cout<<"Mirror "<<int_mirror_ID;
-			//~ cout<<"->calculate_bolt_manipulation_distances()->";
-			//~ cout<<"misalignment angles have not been calculated yet!";	
-			//~ cout<<endl;		
-		//~ }
-	//~ }	
 	
 	if(flag_misalignment_angles_have_been_calculated){
 		
@@ -536,13 +478,80 @@ void mirror::calculate_bolt_manipulation_distances(){
 			get_y_tilt_prompt_in_deg_min_sec()<<")\n";
 		}
 		
+		/** approximation
+		 lets assume the initial mirror orientation is always zero in x and y
+		 so the initial surface normal vector of the center of the mirror
+		 is \vec{n}=(0,0,1)^T
+		 **/
+		Vector3D ez; ez.set_unit_vector_z();
+		
+	
+		Vector3D old_mirror_x; old_mirror_x.set_unit_vector_x();
+		Vector3D old_mirror_y; old_mirror_y.set_unit_vector_y();
+		 
+		Vector3D new_mirror_x = old_mirror_x + 
+		ez*MirrorMisalignmentDirection.direction_in_y_in_radiant;
+		
+		new_mirror_x = new_mirror_x/new_mirror_x.norm2();
+		
+		Vector3D new_mirror_y = old_mirror_y + 
+		ez*MirrorMisalignmentDirection.direction_in_x_in_radiant;
+		
+		new_mirror_y = new_mirror_y/new_mirror_y.norm2();
+		
+		Vector3D new_mirror_surface_normal = 
+		new_mirror_x.cross_product(new_mirror_y);
+		
+		if(verbosity){
+			std::cout<<"| new pseudo mirror plane x vector     : ";
+			std::cout<<new_mirror_x.get_string()<<std::endl;
+			std::cout<<"| new pseudo mirror plane y vector     : ";
+			std::cout<<new_mirror_y.get_string()<<std::endl;
+			std::cout<<"| new pseudo mirror plane normal vector: ";
+			std::cout<<new_mirror_surface_normal.get_string()<<std::endl;
+		}	
+		
+		/// calculate intersection parameter of line 
+		/// tripod_orientation_i_in_rad + ez * lambda: lambda.
+		
+		manipulation_distance_of_first_tripod_leg_in_m = 
+		(position_of_first_tripod_leg*(-1.0))*
+		new_mirror_surface_normal/
+		(ez*new_mirror_surface_normal);
+
+		manipulation_distance_of_second_tripod_leg_in_m = 
+		(position_of_second_tripod_leg*(-1.0))*
+		new_mirror_surface_normal/
+		(ez*new_mirror_surface_normal);
+		
+		manipulation_distance_of_third_tripod_leg_in_m = 
+		(position_of_third_tripod_leg*(-1.0))*
+		new_mirror_surface_normal/
+		(ez*new_mirror_surface_normal);
+		
+		if(verbosity){
+			std::cout<<std::endl;
+			std::cout<<"| manipulation distance 1: ";
+			std::cout.precision(10);
+			std::cout<<manipulation_distance_of_first_tripod_leg_in_m;
+			std::cout<<" [m]"<<std::endl;
+			std::cout<<"| manipulation distance 2: ";
+			std::cout.precision(10);
+			std::cout<<manipulation_distance_of_second_tripod_leg_in_m;
+			std::cout<<" [m]"<<std::endl;	
+			std::cout<<"| manipulation distance 3: ";
+			std::cout.precision(10);
+			std::cout<<manipulation_distance_of_third_tripod_leg_in_m;
+			std::cout<<" [m]"<<std::endl;
+			std::cout<<"|__________________________________"<<std::endl;
+		}
+	
 		tripod_orientation_z_in_rad;
 		manipulation_distance_of_first_tripod_leg_in_m;
 		manipulation_distance_of_second_tripod_leg_in_m;
 		manipulation_distance_of_third_tripod_leg_in_m;
 
-
-		flag_manipulations_have_been_calculated = true;
+		flag_manipulation_distances_have_been_calculated = true;
 		
 	}else{
 		std::cout<<"mirror "<<mirror_ID;
@@ -553,3 +562,97 @@ void mirror::calculate_bolt_manipulation_distances(){
 	
 }
 //======================================================================
+void mirror::set_mirror_tripod(
+double new_tripod_radius_in_m,
+double new_pitch_of_bolt_in_m_per_revolution){
+	
+	tripod_radius_in_m = new_tripod_radius_in_m;
+	
+	pitch_of_bolt_in_m_per_revolution = 
+	new_pitch_of_bolt_in_m_per_revolution;
+	
+	init_tripod();
+}
+//======================================================================
+void mirror::init_tripod(){
+	
+	double one_third_PI = M_PI*1.0/3.0;
+	
+	position_of_first_tripod_leg.set_vec3D(
+	tripod_radius_in_m*cos(tripod_orientation_z_in_rad),
+	tripod_radius_in_m*sin(tripod_orientation_z_in_rad),
+	0.0);
+	
+	position_of_second_tripod_leg.set_vec3D(
+	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+one_third_PI),
+	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+one_third_PI),
+	0.0);
+	
+	position_of_third_tripod_leg.set_vec3D(
+	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+2.0*one_third_PI),
+	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+2.0*one_third_PI),
+	0.0);
+	
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"initialize_tripod() -> ";
+		std::cout<<"radius: "<<tripod_radius_in_m<<"m "; 
+		std::cout<<"rot z: ";
+		std::cout<<tripod_orientation_z_in_rad*360/(2.0*M_PI)<<"deg"; 
+		std::cout<<std::endl;
+		std::cout<<" first leg pos: "<<position_of_first_tripod_leg.
+		get_string();
+		std::cout<<", second leg pos: "<<position_of_second_tripod_leg.
+		get_string();
+		std::cout<<", third leg pos: "<<position_of_third_tripod_leg.
+		get_string();
+		std::cout<<std::endl;
+	}	
+}
+//======================================================================
+void mirror::calculate_bolt_manipulation_revolutions(){
+	if(flag_manipulation_distances_have_been_calculated){
+		
+		if(verbosity){
+			std::cout<<"mirror -> ";
+			std::cout<<"calculate_bolt_manipulation_revolutions() -> ";
+			std::cout<<"bolt pitch: ";
+			std::cout<<pitch_of_bolt_in_m_per_revolution<<" m/revs, ";
+			std::cout<<"1) ";
+			std::cout<<manipulation_distance_of_first_tripod_leg_in_m<<"m, ";
+			std::cout<<"2) ";
+			std::cout<<manipulation_distance_of_second_tripod_leg_in_m<<"m, ";
+			std::cout<<"3) ";
+			std::cout<<manipulation_distance_of_third_tripod_leg_in_m<<"m";
+		}
+		
+		manipulation_revolutions_of_first_tripod_leg_in_revs = 
+		manipulation_distance_of_first_tripod_leg_in_m/
+		pitch_of_bolt_in_m_per_revolution;
+
+		manipulation_revolutions_of_second_tripod_leg_in_revs = 
+		manipulation_distance_of_second_tripod_leg_in_m/
+		pitch_of_bolt_in_m_per_revolution;
+		
+		manipulation_revolutions_of_third_tripod_leg_in_revs = 
+		manipulation_distance_of_third_tripod_leg_in_m/
+		pitch_of_bolt_in_m_per_revolution;	
+
+		if(verbosity){
+			std::cout<<"mirror -> ";
+			std::cout<<"calculate_bolt_manipulation_revolutions() -> ";
+			std::cout<<"1) ";
+			std::cout<<manipulation_revolutions_of_first_tripod_leg_in_revs<<"revs, ";
+			std::cout<<"2) ";
+			std::cout<<manipulation_revolutions_of_second_tripod_leg_in_revs<<"revs, ";
+			std::cout<<"3) ";
+			std::cout<<manipulation_revolutions_of_third_tripod_leg_in_revs<<"revs";
+		}			
+		
+	}else{
+		std::cout<<"mirror -> ";
+		std::cout<<"calculate_bolt_manipulation_revolutions() -> ";	
+		std::cout<<"manipulation distances have been calculated\n";		
+	}
+}
+

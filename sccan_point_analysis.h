@@ -19,7 +19,31 @@
 // plotting
 #include <mgl2/mgl.h>
 
-//=================================
+//======================================================================
+static bool compare_normalized_flux(
+const sccan_analysis_point *a, const sccan_analysis_point *b){
+	
+	return(
+	a->get_normalized_light_flux()
+	<
+	b->get_normalized_light_flux()
+	);	
+	
+}
+//======================================================================
+static bool compare_only_mirror_flux(
+const sccan_analysis_point *a, const sccan_analysis_point *b){
+	
+	return(
+	a->get_mirror_light_flux()
+	<
+	b->get_mirror_light_flux()
+	);	
+	
+}
+//======================================================================
+
+//======================================================================
 class sccan_point_analysis 		:public user_interaction{
 	public:
 	bool 	sccan_point_analysis_verbosity;
@@ -27,6 +51,8 @@ class sccan_point_analysis 		:public user_interaction{
 	std::vector< std::vector<sccan_analysis_point*> > sccan_matrix;
 	// dimension 1 sccan analysis points
 	// dimension 2 mirrors
+	
+	bool normalize_mirror_response;
 	
 	//input
 	sccan_point_pair_handler* pointer_to_sccan_point_pair_handler;
@@ -61,10 +87,6 @@ void draw_mirror_response(uint mirror_iterator);
 uint get_number_of_mirrors();
 //======================================================================
 uint get_number_of_sccan_points();
-//======================================================================
-bool operator()(
-const sccan_analysis_point &one,
-const sccan_analysis_point &two);
 //======================================================================
 void run_anaysis();
 };

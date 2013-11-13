@@ -16,7 +16,12 @@
 class sccan_analysis_point		:public programm_verbosity{
 private:
 	pointing_direction star_position_relative_to_pointing_direction;
+	
 	double 	normalized_light_flux;
+	
+	double star_light_flux_in_bulbs;
+	double mirror_light_flux_in_bulbs;
+	
 	uint 	mirror_ID;
 
 public:	
@@ -29,9 +34,14 @@ void set_mirror_ID(uint new_mirror_ID);
 //======================================================================
 uint get_mirror_ID();
 //======================================================================
-void set_normalized_light_flux(double new_normalized_light_flux);
+void set_light_flux(double new_star_light_flux_in_bulbs,
+double new_mirror_light_flux_in_bulbs);
 //======================================================================
 double get_normalized_light_flux()const;
+//======================================================================
+double get_mirror_light_flux()const;
+//======================================================================
+double get_star_light_flux()const;
 //======================================================================
 void set_star_position_relative_to_pointing_direction
 (pointing_direction new_star_position_relative_to_pointing_direction);

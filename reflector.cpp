@@ -62,9 +62,13 @@ void reflector::interaction(){
 	
 	std::string key_calibration_image = "i";	
 	add_control(key_calibration_image,"choose calibration sccan_image");
+
 	
 	std::string key_change_name = "name";	
 	add_control(key_change_name,"change reflector name");
+	
+	std::string key_show_mirror_status = "ms";	
+	add_control(key_show_mirror_status,"show mirror status");
 	
 	std::string key_delete_current_mirror = "delete";	
 	add_control(key_delete_current_mirror,"delete current mirror ID");	
@@ -172,6 +176,13 @@ void reflector::interaction(){
 		//==========================================================
 		user_wants_to_quit_mirror_manipulation = true;
 	}
+	//==================================================================	
+	if(valid_user_input.compare(key_show_mirror_status)==0){	
+		//==========================================================
+		// show mirror status
+		//==========================================================
+		show_mirror_status();
+	}	
 	//==================================================================
 	update_status_prompt(get_reflector_prompt());
 	}while(user_wants_to_quit_mirror_manipulation == false);	
@@ -347,7 +358,14 @@ std::string file_name_of_reflector_configuration_to_load){
 				std::cout<<number_of_mirrors_in_file;
 				std::cout<<" has been loaded successful."<<std::endl;
 			}	
-	
+			//==========================================================
+			// init mirror with reflector data
+			//==========================================================
+			pointer_to_a_new_mirror_read_form_file -> set_mirror_tripod(
+			tripod_radius_in_m,pitch_of_bolt_in_m_per_revolution);
+			
+			
+			
 			//==========================================================
 			// update mirror masks
 			//==========================================================
@@ -972,7 +990,12 @@ bool reflector::add_mirror(uint new_mirror_ID){
 	
 	mirror *pointer_to_new_mirror;
 	pointer_to_new_mirror = new mirror(0,verbosity);
+	
 	pointer_to_new_mirror->set_mirror_ID(new_mirror_ID);
+	
+	pointer_to_new_mirror->set_mirror_tripod(
+	tripod_radius_in_m,
+	pitch_of_bolt_in_m_per_revolution);
 	
 	if(choose_mirror_ID_to_work_with
 	(pointer_to_new_mirror->get_mirror_ID())){
@@ -1075,4 +1098,29 @@ list_of_pixel_positions* reflector::get_pointer_to_list_of_Points_inside_mirror_
 	}
 }
 //======================================================================
+void reflector::show_mirror_status(){
 
+	if(verbosity){
+		std::cout<<"reflector -> show_mirror_status() of all ";
+		std::cout<<list_of_pointers_to_mirrors.size();
+		std::cout<<" mirrors"<<std::endl;
+	}
+	
+	std::stringstream out;
+	
+	for(uint MIit=0;MIit<list_of_pointers_to_mirrors.size();MIit++){
+		
+		if(verbosity){
+			std::cout<<"reflector -> show_mirror_status() -> ";
+			std::cout<<"mirror No "<<MIit+1<<", ID ";
+			std::cout<<list_of_pointers_to_mirrors.at(MIit)->
+			get_mirror_ID()<<std::endl;
+		}
+		
+		out << list_of_pointers_to_mirrors.at(MIit)->get_string();
+		
+	}
+	
+	std::cout << out.str();
+}
+//======================================================================

@@ -924,9 +924,15 @@ uint mirror_ID
 		mean_light_flux_of_specific_reflector_mirror_in_bulbs/
 		sccan_star.light_flux_of_star_in_bulbs;
 		
+		//~ pointer_to_a_new_sccan_analysis_point->
+		//~ set_normalized_light_flux(normalized_light_flux);
+
 		pointer_to_a_new_sccan_analysis_point->
-		set_normalized_light_flux(normalized_light_flux);
-		
+		set_light_flux(
+		sccan_star.light_flux_of_star_in_bulbs,
+		mean_light_flux_of_specific_reflector_mirror_in_bulbs
+		);	
+			
 		return pointer_to_a_new_sccan_analysis_point;
 	
 	}else{

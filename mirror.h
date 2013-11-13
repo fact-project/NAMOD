@@ -12,7 +12,7 @@
 #include "pointing_direction.h"
 #include "programm_verbosity.h"
 #include "simple_image.h"
-
+#include "Vector3D.h"
 // include for configuration file
 #include <iomanip>
 #include <cstdlib>
@@ -32,8 +32,10 @@ public:
 	
 	// mirror mount orientation
 	double tripod_orientation_z_in_rad;
-
-	bool flag_manipulations_have_been_calculated;
+	double tripod_radius_in_m;
+	double pitch_of_bolt_in_m_per_revolution;
+	
+	bool 	flag_manipulation_distances_have_been_calculated;
 	double manipulation_distance_of_first_tripod_leg_in_m;
 	double manipulation_distance_of_second_tripod_leg_in_m;
 	double manipulation_distance_of_third_tripod_leg_in_m;
@@ -42,21 +44,23 @@ public:
 	double manipulation_revolutions_of_second_tripod_leg_in_revs;
 	double manipulation_revolutions_of_third_tripod_leg_in_revs;
 
+	Vector3D position_of_first_tripod_leg;
+	Vector3D position_of_second_tripod_leg;
+	Vector3D position_of_third_tripod_leg;	 
+
 	// missalignment
-	pointing_direction MirrorMisalignmentDirection;
-	bool 	flag_misalignment_angles_have_been_calculated;
-	//~ double 	missalignment_angle_in_x_in_rad;
-	//~ double 	missalignment_angle_in_y_in_rad;
+	pointing_direction 	MirrorMisalignmentDirection;
+	bool 				flag_misalignment_angles_have_been_calculated;
 	
 	// mask sccan_image
-	bool 				flag_mask_has_been_initialized;
+	bool 					flag_mask_has_been_initialized;
 	std::vector<cv::Point> 	list_of_points_defining_mirror_polygon;
-	simple_image		image_with_mirror_mask;
-	list_of_pixel_positions 		list_of_Points_inside_mirror_polygon;
+	simple_image			image_with_mirror_mask;
+	list_of_pixel_positions list_of_Points_inside_mirror_polygon;
 	
 	// configuration file
-	std::string 	key_ID;
-	std::string 	key_tripod_orientation_z_in_rad;
+	std::string key_ID;
+	std::string key_tripod_orientation_z_in_rad;
 	std::string	key_list_of_points_defining_mirror_polygon;
 	std::string	key_polygon_point_pixel_coordinate_x;
 	std::string	key_polygon_point_pixel_coordinate_y;	
@@ -97,5 +101,12 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse);
 //======================================================================
 void calculate_bolt_manipulation_distances();
 //======================================================================
+void set_mirror_tripod(
+double new_tripod_radius_in_m,
+double new_pitch_of_mirror_bolt);
+//======================================================================
+void init_tripod();
+//======================================================================
+void calculate_bolt_manipulation_revolutions();
 };
 #endif // __MIRROR_H_INCLUDED__ 

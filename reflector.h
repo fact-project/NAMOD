@@ -102,6 +102,8 @@ int get_number_of_mirrors_on_reflector();
 list_of_pixel_positions* get_pointer_to_list_of_Points_inside_mirror_polygon
 (int mirror_itterator);
 //======================================================================
+void show_mirror_status();
+//======================================================================
 };
 
 #endif // __REFLECTOR_H_INCLUDED__

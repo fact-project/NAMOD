@@ -37,7 +37,6 @@ int main(){
 	int system_call_return_value;
 	system_call_return_value = system("clear"); 
 	system_call_return_value = system("clear"); 
-	
 
 	//==================================================================
 	// star camera

@@ -35,6 +35,7 @@ quick_align.cpp
 sccan_point_analysis.cpp
 verbosity_handler.cpp
 main_menu.cpp
+Vector3D.cpp
 )
 #=======================================================================
 # UEYE IDS imaging
