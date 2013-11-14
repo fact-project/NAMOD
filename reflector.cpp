@@ -1122,5 +1122,6 @@ void reflector::show_mirror_status(){
 	}
 	
 	std::cout << out.str();
+	export_text("mirror_status.txt",out.str());
 }
 //======================================================================

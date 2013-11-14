@@ -39,17 +39,19 @@ std::string mirror::get_string(){
 	out<<"| Mirror ID: "<<mirror_ID<<std::endl;
 	out<<"|\n";
 	out<<"|  _tripod________________________________________________\n";
-	out<<"| | tripod rotation in z: "<<tripod_orientation_z_in_rad<<"rad\n";
+	out<<"| | tripod rotation in z: "<<tripod_orientation_z_in_rad;
+	out<<"rad / "<<tripod_orientation_z_in_rad*(360/(2.0*M_PI))<<"deg\n";
 	out<<"| | tripod radius: "<<tripod_radius_in_m<<"m\n";
-	out<<"| | bolt pitch  : "<<pitch_of_bolt_in_m_per_revolution<<"m/revs"<<"\n";
-	out<<"| | 1st leg pos : "<<position_of_first_tripod_leg.get_string()<<"\n";	
-	out<<"| | 2st leg pos : "<<position_of_second_tripod_leg.get_string()<<"\n";
-	out<<"| | 3st leg pos : "<<position_of_third_tripod_leg.get_string()<<"\n";
+	out<<"| | bolt pitch  : "<<pitch_of_bolt_in_m_per_revolution<<"m/revolution"<<"\n";
+	out<<"| | initial positions of tripod legs\n";
+	out<<"| | 1st leg : "<<position_of_first_tripod_leg.get_string()<<"\n";	
+	out<<"| | 2nd leg : "<<position_of_second_tripod_leg.get_string()<<"\n";
+	out<<"| | 3rd leg : "<<position_of_third_tripod_leg.get_string()<<"\n";
 	out<<"| |_______________________________________________________\n";
 	out<<"|\n";
-	out<<"|  _polygon_______________________________________________\n";
+	out<<"|  _mirror_mask_polygon___________________________________\n";
 	out<<"| |\n";
-	out<<"| | number of points "<<list_of_points_defining_mirror_polygon.size()<<std::endl;
+	out<<"| | number of points: "<<list_of_points_defining_mirror_polygon.size()<<std::endl;
 	out<<"| | polygon list: ";
 	if(list_of_points_defining_mirror_polygon.size()==0){
 		out<<"empty list";
@@ -66,7 +68,7 @@ std::string mirror::get_string(){
 	}
 	if(flag_mask_has_been_initialized)
 	{
-	out<<"| | number of pixels in polygon: ";
+	out<<"| | number of pixels enclosed by polygon: ";
 	out<<list_of_Points_inside_mirror_polygon.size()<<std::endl;
 	}else{
 	out<<"| | mirror mask has not been initialized yet."<<std::endl;
@@ -391,28 +393,57 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			calculate_bolt_manipulation_revolutions();
 			
 			std::stringstream manual;
-			manual<<"ID "<<mirror_ID<<"\t";
+			manual<<"_______________________________________________\n";
+			manual<<"Mirror ID "<<mirror_ID<<"\n";
+			
 			manual<<"Bolt 1: ";
+			if(manipulation_revolutions_of_first_tripod_leg_in_revs>0.0)
+			manual<<"+";
 			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs;
-			manual<<"[revs]/";
+			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs
 			*360.0;
-			manual<<"[deg] \t,";
-
+			manual<<"deg\n";
+			
 			manual<<"Bolt 2: ";
+			if(manipulation_revolutions_of_second_tripod_leg_in_revs>0.0)
+			manual<<"+";
 			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs;
-			manual<<"[revs]/";
+			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs
 			*360.0;
-			manual<<"[deg] \t,";
-
+			manual<<"deg\n";
+			
 			manual<<"Bolt 3: ";
+			if(manipulation_revolutions_of_third_tripod_leg_in_revs>0.0)
+			manual<<"+";
 			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs;
-			manual<<"[revs]/";
+			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs
 			*360.0;
-			manual<<"[deg]";
+			manual<<"deg\n";
 			manual<<"\n";
+			manual<<"direction of star relative to telescope for";
+			manual<<"brightest mirror response:\n";
+			manual<<"x: "<<
+			DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse.
+			get_x_tilt_prompt_in_deg_min_sec();
+			manual<<"\n";
+			manual<<"y: "<<
+			DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse.
+			get_y_tilt_prompt_in_deg_min_sec();	
+			manual<<"\n";
+			manual<<"\n";
+			manual<<"direction of mirror relative to telescope which ";
+			manual<<"will be compensated:\n";				
+			manual<<"x: "<<
+			MirrorMisalignmentDirection.
+			get_x_tilt_prompt_in_deg_min_sec();
+			manual<<"\n";
+			manual<<"y: "<<
+			MirrorMisalignmentDirection.
+			get_y_tilt_prompt_in_deg_min_sec();	
+			manual<<"\n";			
 			return manual.str();
 		
 		}else{

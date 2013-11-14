@@ -575,7 +575,11 @@ draw_mirror_response(uint mirror_iterator){
 	gr.Axis();
 	gr.Label('x',"x direction [deg]",0);
 	gr.Label('y',"y direction [deg]",0);
-	gr.Label('z',"mirror response [1]",0);
+	if(normalize_mirror_response){
+		gr.Label('z',"normalized mirror response [1]",0);
+	}else{
+		gr.Label('z',"mirror response [bulbs]",0);
+	}
 	gr.Box(); 
 	gr.Light(true);
 	
@@ -640,6 +644,19 @@ run_anaysis(){
 	}
 	
 	std::cout << instruction_table.str();
+	
+	// timestamp in filename
+	std::stringstream instruction_table_filename;
+	
+	instruction_table_filename << "mirror_alignment_instruction_table_";
+	instruction_table_filename << 
+	global_time_stamp_manager_instance.get_current_time_stamp();
+	instruction_table_filename << ".txt";
+	
+	export_text( 
+	instruction_table_filename.str(),
+	instruction_table.str()
+	);
 }	
 //======================================================================
 

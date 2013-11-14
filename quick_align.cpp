@@ -7,8 +7,7 @@ sccan_point_pair_handler* new_pointer_to_sccan_point_pair_handler){
 	if(verbosity){
 		std::cout<<"quick_align -> quick_align()"<<std::endl;
 	}
-	
-	
+
 	menu_name = "quick single mirror alignment";
 	
 	pointer_to_reflector = 
@@ -66,26 +65,6 @@ void quick_align::run_alignment(){
 		cvWaitKey(time_until_images_are_updated_in_ms);
 
 		switch(key_pressed_by_user){
-			//~ case 'w': move_forward();
-			//~ break;
-			//~ case 's': move_backward();
-			//~ break;
-			//~ case 'a': move_left();
-			//~ break;
-			//~ case 'd': move_right();
-			//~ break;
-			//~ case '+': increase_FoV();
-			//~ break;
-			//~ case '-': decrease_FoV();
-			//~ break;
-			//~ case 'i' : look_up();
-			//~ break;
-			//~ case 'k' : look_down();
-			//~ break;
-			//~ case 'j' : look_left();
-			//~ break;
-			//~ case 'l' : look_right();
-			//~ break;
 			case 'h' : {
 				display_help();
 			};
@@ -98,7 +77,7 @@ void quick_align::run_alignment(){
 //======================================================================
 void quick_align::display_help(){
 	std::cout<<"quick_align -> start_alignment() -> ";
-	std::cout<<"help"<<std::endl;
+	std::cout<<"help: Press ESC to end quick alignment."<<std::endl;
 }
 //======================================================================
 void quick_align::update_alignment_window(){

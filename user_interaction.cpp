@@ -281,7 +281,7 @@ std::string user_interaction::get_alphanumeric_string_by_user(){
 		int sys_return =  system("clear");
 		std::cout<<get_menu_header();
 		std::cout<<status_prompt;
-		std::cout<<"Enter a std::string (no points or whitespaces!)"<<std::endl;
+		std::cout<<"Enter a string (no points or whitespaces!)"<<std::endl;
 		std::cout<<last_warning.str();		
 		last_warning.str("");
 		std::cout<<"->";
@@ -457,5 +457,28 @@ std::string right_text){
 	out<<std::endl;
 	
 	return out.str();
+}
+//======================================================================
+void user_interaction::export_text(
+std::string filename,std::string text){
+
+	if(verbosity){
+		std::cout << "user_interaction -> export_text() -> ";
+		std::cout << "creating file:  >"<<filename<<"<\n";
+	}
+	
+	std::ofstream myfile (filename.c_str());
+	if (myfile.is_open()){
+		
+		myfile << text;
+		myfile.close();
+		
+		std::cout << "user_interaction -> export_text() -> ";
+		std::cout << "created file >"<<filename<<"<\n";
+	
+	}else{
+		std::cout << "user_interaction -> export_text() -> ";
+		std::cout << "unable to create file >"<<filename<<"<\n";
+	}
 }
 //======================================================================

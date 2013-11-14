@@ -11,6 +11,7 @@
 // included dependencies
 #include "programm_verbosity.h"
 
+#include <fstream>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
@@ -69,5 +70,6 @@ std::vector <std::string> get_list_of_files_in_directory( const std::string& pat
 //======================================================================
 std::string make_nice_line_with_dots(std::string left_text,std::string right_text);
 //======================================================================
+void export_text(std::string filename,std::string text);
 };
 #endif // __USER_INTERACTION_H_INCLUDED__ 

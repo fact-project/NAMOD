@@ -42,9 +42,15 @@ get_angle_text_prompt_in_deg_arc_min_arc_sec(double angle_in_rad){
 		std::cout<<angle_in_rad<<"rad"<<std::endl;
 	}
 
+	bool sign_of_angle_is_positiv;
+	if(angle_in_rad>0.0)
+	{sign_of_angle_is_positiv = true;}
+	else
+	{sign_of_angle_is_positiv = false;}
+
 	double DEG = angle_in_rad/(2.0*M_PI)*360.0;
-	double DEG_full, DEG_fraction;
-	DEG_fraction = modf(DEG,&DEG_full);
+	double DEG_full;
+	double DEG_fraction = modf(DEG,&DEG_full);
 	
 	if(verbosity){
 		std::cout<<"pointing_direction -> ";
@@ -52,9 +58,9 @@ get_angle_text_prompt_in_deg_arc_min_arc_sec(double angle_in_rad){
 		std::cout<<DEG<<"deg, full: "<<DEG_full<<"deg"<<std::endl;
 	}
 
-	double arc_Min = abs(DEG_fraction*60.0);
-	double arc_Min_full, arc_Min_fraction;
-	arc_Min_fraction = modf(arc_Min,&arc_Min_full);
+	double arc_Min = fabs(DEG_fraction*60.0);
+	double arc_Min_full;
+	double arc_Min_fraction = modf(arc_Min,&arc_Min_full);
 	
 	if(verbosity){
 		std::cout<<"pointing_direction -> ";
@@ -69,10 +75,16 @@ get_angle_text_prompt_in_deg_arc_min_arc_sec(double angle_in_rad){
 		std::cout<<"get_angle_text_prompt_in_deg_arc_min_arc_sec() -> ";
 		std::cout<<arc_sec<<"sec"<<std::endl;
 	}
+	if(fabs(arc_sec)<0.001)
+		arc_sec = 0.0;
+	
 	
 	std::stringstream out;
+	
+	if(sign_of_angle_is_positiv){out<<"+";}
+	
 	out<<DEG_full<<"DEG "<<arc_Min_full<<"min ";
-	out.precision(2);
+	out.precision(3);
 	out<<arc_sec<<"sec";
 	return out.str();
 }
