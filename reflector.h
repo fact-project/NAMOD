@@ -13,6 +13,7 @@
 #include "user_interaction.h"
 #include "sccan_image.h"
 #include "global_variables.h"
+#include "ueye_camera.h"
 
 //=================================
 class reflector 				:public user_interaction{
@@ -32,7 +33,7 @@ private:
 	
 	// reflector configuration text file
 	std::string		file_name_extension_for_configuration_file;
-	std::string 		reflector_configuration_file_name;
+	std::string 	reflector_configuration_file_name;
 	std::string		key_list_of_mirrors;
 	std::string		key_reflector;
 	std::string		key_reflector_name;
@@ -40,12 +41,15 @@ private:
 	std::string		key_tripod_radius_in_m;
 	std::string		key_pitch_of_bolt_in_m_per_revolution;
 	
+	// reflector camera
+	ueye_camera *pointer_to_reflector_camera;
+	
 	// pointer for static mouse call back
 	reflector* pObj;
 //======================================================================
 public:
 //======================================================================
-reflector();
+reflector(ueye_camera *new_pointer_to_reflector_camera);
 //======================================================================
 void initialize_default_reflector();
 //======================================================================
@@ -72,6 +76,9 @@ std::string get_reflector_name();
 //======================================================================
 void update_calibration_image_with_polygons(bool highlight);
 //======================================================================
+void update_image_with_polygons(
+sccan_image *image_to_draw_poygons_in,bool highlight);
+//======================================================================
 void manipulate_mirror_polygon();
 //======================================================================
 static void onMouse(int event, int x, int y, int flags, void *param);
@@ -81,6 +88,9 @@ void add_point_to_polygon_point_list_of_mirror(int pixel_x, int pixel_y);
 void pop_point_of_polygon_point_list_of_mirror();
 //======================================================================
 void toggle_verbosity();
+//======================================================================
+void check_mirror_polygon_position_in_live_reflector_display(
+double desired_exposure_time_for_reflector_camera_in_ms);
 //======================================================================
 // list of mirrors
 //======================================================================

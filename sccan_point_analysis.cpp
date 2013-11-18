@@ -374,7 +374,7 @@ uint mirror_iterator){
 		std::cout<<", y:";
 		std::cout<<(*iterator_to_brightest_sccan_point)->
 		get_star_position_relative_to_pointing_direction().
-		get_x_tilt_prompt_in_deg_min_sec();
+		get_y_tilt_prompt_in_deg_min_sec();
 		std::cout<<std::endl;
 	}	
 		

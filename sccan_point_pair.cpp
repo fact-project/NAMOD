@@ -531,6 +531,7 @@ bool	*max_number_of_exposure_itterations_has_been_exceeded
 			std::cout<<"images have been acquired"<<std::endl;
 			*max_number_of_exposure_itterations_has_been_exceeded = true;
 		}
+		return true;
 	}else{
 		std::cout<<"sccan_point_pair -> acquire_sccan_images() -> ";
 		std::cout<<"aquisition failed. ";

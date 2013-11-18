@@ -325,20 +325,18 @@ void mirror::create_list_of_Points_inside_mirror_polygon(){
 	image_with_mirror_mask.create_list_of_Points_of_non_zero_pixels();
 }
 //======================================================================
-list_of_pixel_positions* mirror::get_pointer_to_list_of_Points_inside_mirror_polygon(){
+list_of_pixel_positions* mirror::
+get_pointer_to_list_of_Points_inside_mirror_polygon(){
 	return &list_of_Points_inside_mirror_polygon;
 }
 //======================================================================
-simple_image mirror::highlight_mirror_in_reflector_image
-(simple_image* pointer_to_reflector_image){
+sccan_image mirror::highlight_mirror_in_reflector_image
+(sccan_image* pointer_to_reflector_image){
 
 	// calculate ROI
 	cv::Rect mirror_region_of_interest= boundingRect(
 	list_of_points_defining_mirror_polygon);
 
-
-	//image_with_mirror_mask.disp_simple_image("mask");
-	
 	if(verbosity){
 		std::cout<<"mirror -> ";
 		std::cout<<"highlight_mirror_in_reflector_image() -> ";	
@@ -350,32 +348,217 @@ simple_image mirror::highlight_mirror_in_reflector_image
 		std::cout<<std::endl;					
 	}
 		
-	simple_image highlited_image = *pointer_to_reflector_image;
+	sccan_image highlited_image = *pointer_to_reflector_image;
+	
 	// highlight pixels
-	for(int pixel_to_highlight_itterator = 0;
-	pixel_to_highlight_itterator<
-	list_of_Points_inside_mirror_polygon.size();
-	pixel_to_highlight_itterator++)
-	{
-		cv::Vec3b intensity = highlited_image.image_matrix.at<cv::Vec3b>
-		(list_of_Points_inside_mirror_polygon.
-		at(pixel_to_highlight_itterator));
-		// BGR
-
-		intensity[2] = (int)( (float)intensity[2]*1.5 );
-		if((int)intensity[2]>255)
-			intensity[2] = (uchar)255;	
+	draw_mirror_polygon(&highlited_image,true);
 	
-		highlited_image.image_matrix.at<cv::Vec3b>
-		(list_of_Points_inside_mirror_polygon.
-		at(pixel_to_highlight_itterator))=intensity;
-	}
-	//highlited_image.disp_simple_image("highlited mirror");
-	
-	simple_image highlited_image_roi;
+	sccan_image highlited_image_roi;
 	highlited_image_roi.image_matrix =
 	highlited_image.image_matrix(mirror_region_of_interest).clone();
 	return highlited_image_roi;
+}
+//======================================================================
+void mirror::
+draw_mirror_polygon(
+sccan_image *image_to_draw_poygons_in,bool highlight){
+
+	// to normalize the lines and text fonts to be drawed the image size
+	// is taken into account
+	int number_of_pixels_of_image = 
+	image_to_draw_poygons_in->get_number_of_pixels();
+	
+	double mean_number_of_image_lines = 
+	sqrt((double)number_of_pixels_of_image);
+	
+	double line_thickness_per_image_line = 2.0/1e3;
+	double circle_radius_in_pixel_per_image_line = 5.0/1e3;
+	double circle_thickness_in_pixel_per_image_line = 2.0/1e3;
+	double text_thickness_per_image_line  = 2/1e3;	
+	
+	// line specific information
+	int line_thickness = (int)
+	ceil(line_thickness_per_image_line*mean_number_of_image_lines);
+	int line_Type = 8;		
+	 
+	// mirror ID spcific information
+	cv::Point location_of_mirror_ID;
+	int 	text_thickness = (int)
+	ceil(text_thickness_per_image_line*mean_number_of_image_lines);
+	double 	text_fontScale = 0.75;
+	int 	text_fontFace = CV_FONT_HERSHEY_SIMPLEX;
+	
+	// circle spcific information
+	double circle_radius_in_pixel = 
+	circle_radius_in_pixel_per_image_line*mean_number_of_image_lines;
+	int circle_thickness_in_pixel = 
+	(int)ceil(
+	circle_thickness_in_pixel_per_image_line*mean_number_of_image_lines
+	);
+	int circle_lineType	=8;	
+
+	int number_of_points = 
+	list_of_points_defining_mirror_polygon.size();
+	
+	if(number_of_points==0){
+		if(verbosity){
+			std::cout<<"mirror -> ";
+			std::cout<<"update_calibration_image_with_polygons -> ";
+			std::cout<<"No polygon of mirror ID:";
+			std::cout<<get_mirror_ID()<<std::endl;
+		}
+	}else{
+		if(verbosity){
+			std::cout<<"mirror -> ";
+			std::cout<<"update_calibration_image_with_polygons -> ";
+			std::cout<<"Draw polygon of mirror ID:";
+			std::cout<<get_mirror_ID()<<std::endl;
+		}
+		
+		// reset mirror ID location
+		location_of_mirror_ID.x=0;
+		location_of_mirror_ID.y=0;
+		//==========================================================
+		// for each line to draw
+		//==========================================================
+		for(int point_itterator=0; 
+			point_itterator<number_of_points;
+			point_itterator++)
+		{
+				// init start point of line
+				cv::Point start_point = 
+				list_of_points_defining_mirror_polygon.
+				at(point_itterator);
+				
+				// init end point of line
+				cv::Point end_point;
+				if((point_itterator+1) == 
+					list_of_points_defining_mirror_polygon.size())
+				{
+					end_point = 
+					list_of_points_defining_mirror_polygon.at(0);
+				}else{
+					end_point = 
+					list_of_points_defining_mirror_polygon.
+					at(point_itterator+1);
+				}
+				// draw line
+				if(verbosity){
+					std::cout<<"mirror -> ";
+					std::cout<<"update_calibration_image_with_polygons";
+					std::cout<<" -> ";
+					std::cout<<"draw line "<<point_itterator+1;
+					std::cout<<": ("<<start_point.x<<"|"<<start_point.y;
+					std::cout<<")->("<<end_point.x;
+					std::cout<<"|"<<end_point.y<<")"<<std::endl;
+				}
+				
+				if(highlight){
+					
+					//colour highlighted
+					//std::cout<<"highlighted !!!"<<std::endl;
+					cv::line(
+					image_to_draw_poygons_in->
+					image_matrix,
+					start_point,
+					end_point,
+					cv::Scalar( 0, 255, 0),//Blue,Green,Red
+					line_thickness,
+					line_Type 
+					);
+				}else{
+					//colour default
+					cv::line(
+					image_to_draw_poygons_in->
+					image_matrix,
+					start_point,
+					end_point,
+					cv::Scalar( 0, 0, 255),//Blue,Green,Red
+					line_thickness,
+					line_Type 
+					);
+				}
+				
+				// calculate mirror ID location
+				location_of_mirror_ID = location_of_mirror_ID +
+				start_point;
+				
+				// draw a filled circle
+				if(highlight){
+					
+					//colour highlighted
+					cv::circle( 
+					image_to_draw_poygons_in->
+					image_matrix,
+					start_point,
+					circle_radius_in_pixel,
+					cv::Scalar( 128, 255, 0 ),
+					circle_thickness_in_pixel,
+					circle_lineType );
+				}else{
+					//colour default
+					cv::circle( 
+					image_to_draw_poygons_in->
+					image_matrix,
+					start_point,
+					circle_radius_in_pixel,
+					cv::Scalar( 128, 0, 255 ),
+					circle_thickness_in_pixel,
+					circle_lineType );
+				}
+			}
+	
+		// draw mirror ID
+		// calculate mirror ID location
+		location_of_mirror_ID.x = 
+		(location_of_mirror_ID.x)/number_of_points;
+		
+		location_of_mirror_ID.y = 
+		(location_of_mirror_ID.y)/number_of_points;
+		
+		//create text ID to display
+		std::stringstream text_to_put_in_image;
+		text_to_put_in_image<<"ID";
+		text_to_put_in_image<<get_mirror_ID();
+		
+		// put text to sccan_image
+		if(highlight){
+			
+			//colour highlighted
+			cv::putText(
+			image_to_draw_poygons_in->
+			image_matrix,
+			text_to_put_in_image.str(),
+			location_of_mirror_ID,
+			text_fontFace,// fontFace
+			text_fontScale,// fontScale
+			cv::Scalar( 64, 255, 64 ),//Blue,Green,Red
+			text_thickness,
+			8
+			);
+		}else{
+			//colour default
+			//colour highlighted
+			cv::putText(
+			image_to_draw_poygons_in->
+			image_matrix,
+			text_to_put_in_image.str(),
+			location_of_mirror_ID,
+			text_fontFace,// fontFace
+			text_fontScale,// fontScale
+			cv::Scalar( 64, 64, 255 ),//Blue,Green,Red
+			text_thickness,
+			8
+			);
+		}
+	}
+	
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"update_calibration_image_with_polygons -> ";
+		std::cout<<"end"<<std::endl;	
+	}
+
 }
 //======================================================================
 std::string mirror::get_manipulation_instructions(pointing_direction

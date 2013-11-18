@@ -12,6 +12,7 @@
 #include "pointing_direction.h"
 #include "programm_verbosity.h"
 #include "simple_image.h"
+#include "sccan_image.h"
 #include "Vector3D.h"
 // include for configuration file
 #include <iomanip>
@@ -55,7 +56,7 @@ public:
 	// mask sccan_image
 	bool 					flag_mask_has_been_initialized;
 	std::vector<cv::Point> 	list_of_points_defining_mirror_polygon;
-	simple_image			image_with_mirror_mask;
+	sccan_image			image_with_mirror_mask;
 	list_of_pixel_positions list_of_Points_inside_mirror_polygon;
 	
 	// configuration file
@@ -88,10 +89,12 @@ void create_polygon_mask(cv::Size image_size_of_reflector_camera);
 //======================================================================
 void create_list_of_Points_inside_mirror_polygon();
 //======================================================================
+void draw_mirror_polygon(sccan_image *image_to_draw_poygons_in,bool highlight);
+//======================================================================
 list_of_pixel_positions* get_pointer_to_list_of_Points_inside_mirror_polygon();
 //======================================================================
-simple_image highlight_mirror_in_reflector_image
-(simple_image* pointer_to_reflector_image);
+sccan_image highlight_mirror_in_reflector_image
+(sccan_image* pointer_to_reflector_image);
 //======================================================================
 std::string get_manipulation_instructions(pointing_direction
 direction_of_star_relative_to_telescope_for_brighteset_mirror_response);

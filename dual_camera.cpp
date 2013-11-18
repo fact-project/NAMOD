@@ -99,7 +99,7 @@ int main(){
 	snap.add_camera(&star_camera);
 	snap.add_camera(&reflector_camera);
 
-	reflector reflector_instance;
+	reflector reflector_instance(&reflector_camera);
 	quick_align quick(&reflector_instance,&sccan_handle);
 	
 

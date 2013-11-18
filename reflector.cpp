@@ -1,6 +1,6 @@
 #include "reflector.h"
 //======================================================================
-reflector::reflector(){
+reflector::reflector(ueye_camera *new_pointer_to_reflector_camera){
 	verbosity = true;
 	
 	//mirror_list
@@ -23,6 +23,8 @@ reflector::reflector(){
 	toggle_verbosity(verbosity);
 	reflector_calibration_image_with_polygons.
 	toggle_verbosity(verbosity);
+	
+	pointer_to_reflector_camera = new_pointer_to_reflector_camera;
 }
 //======================================================================
 void reflector::initialize_default_reflector(){
@@ -51,6 +53,9 @@ void reflector::interaction(){
 	
 	std::string key_choose_mirror_ID = "c";	
 	add_control(key_choose_mirror_ID,"choose mirror ID to manipulate");
+
+	std::string key_release_mirror_ID = "r";	
+	add_control(key_release_mirror_ID,"release mirror ID to manipulate");
 	
 	std::string key_show_calibration_image = "s";	
 	add_control(key_show_calibration_image,
@@ -59,11 +64,14 @@ void reflector::interaction(){
 	std::string key_show_calibration_image_with_polygons = "sp";
 	add_control(key_show_calibration_image_with_polygons,
 	"show calibration image with mirror polygons");
+
+	std::string key_check_polygon_position_in_live_reflector_display = "cp";
+	add_control(key_check_polygon_position_in_live_reflector_display,
+	"check polygon position in live reflector display");
 	
 	std::string key_calibration_image = "i";	
 	add_control(key_calibration_image,"choose calibration sccan_image");
 
-	
 	std::string key_change_name = "name";	
 	add_control(key_change_name,"change reflector name");
 	
@@ -119,6 +127,17 @@ void reflector::interaction(){
 		reflector_calibration_image_with_polygons.disp_image();
 	}
 	//==================================================================
+	if(valid_user_input.compare(
+	key_check_polygon_position_in_live_reflector_display)==0){
+		
+		double exposure_time_for_reflector_in_ms = 
+		ask_user_for_non_zero_float(
+		"exposure time on reflector",0.1,180e3);
+		
+		check_mirror_polygon_position_in_live_reflector_display(
+		exposure_time_for_reflector_in_ms);
+	}
+	//==================================================================
 	if(valid_user_input.compare(key_calibration_image)==0){	
 		set_reflector_calibration_image
 		(get_alphanumeric_string_by_user());
@@ -168,6 +187,10 @@ void reflector::interaction(){
 			add_mirror(user_chosen_mirror_ID);
 			choose_mirror_ID_to_work_with(user_chosen_mirror_ID);
 		}
+	}
+	//==================================================================
+	if(valid_user_input.compare(key_release_mirror_ID)==0){	
+		pointer_to_current_mirror_to_work_with = NULL;
 	}
 	//==================================================================	
 	if(valid_user_input.compare(key_quit)==0){	
@@ -564,6 +587,307 @@ std::string reflector::get_reflector_name(){
 void reflector::update_calibration_image_with_polygons(bool highlight){
 	
 	reflector_calibration_image_with_polygons=
+	reflector_calibration_image;		
+	
+	update_image_with_polygons(
+	&reflector_calibration_image_with_polygons,
+	highlight);
+}
+//======================================================================
+void reflector::update_image_with_polygons(
+sccan_image *image_to_draw_poygons_in,bool highlight){	
+	
+	uint mirror_ID_of_mirror_to_highlight;
+	if(pointer_to_current_mirror_to_work_with == 0){
+		mirror_ID_of_mirror_to_highlight = 0;
+	}else{
+		mirror_ID_of_mirror_to_highlight = 
+		pointer_to_current_mirror_to_work_with->get_mirror_ID();
+	}
+	
+	if(!highlight)
+	mirror_ID_of_mirror_to_highlight = 0;
+	
+	//==================================================================
+	// for each mirror
+	//==================================================================
+	for(	int mirror_itterator = 0;
+			mirror_itterator<list_of_pointers_to_mirrors.size();
+			mirror_itterator++)
+	{
+		bool highlight_specific_mirror = false;
+		
+		if(highlight && 
+		pointer_to_current_mirror_to_work_with->
+		get_mirror_ID() 
+		== 
+		list_of_pointers_to_mirrors.
+		at(mirror_itterator)->
+		get_mirror_ID())
+		highlight_specific_mirror = true;
+		
+
+		list_of_pointers_to_mirrors.
+		at(mirror_itterator)->
+		draw_mirror_polygon(
+		image_to_draw_poygons_in,
+		highlight_specific_mirror);
+		
+	}
+	flag_calibration_image_with_polygons_created = true;
+	
+	if(verbosity){
+		std::cout<<"reflector -> ";
+		std::cout<<"update_calibration_image_with_polygons -> ";
+		std::cout<<"end"<<std::endl;	
+	}
+}
+/*
+void reflector::update_image_with_polygons(
+sccan_image *image_to_draw_poygons_in,bool highlight){	
+	
+	uint mirror_ID_of_mirror_to_highlight;
+	if(pointer_to_current_mirror_to_work_with == 0){
+		mirror_ID_of_mirror_to_highlight = 0;
+	}else{
+		mirror_ID_of_mirror_to_highlight = 
+		pointer_to_current_mirror_to_work_with->get_mirror_ID();
+	}
+	
+	if(!highlight)
+	mirror_ID_of_mirror_to_highlight = 0;
+	
+	// to normalize zhe lines and text fonts to be drawed the image size
+	// is taken into account
+	int number_of_pixels_of_image = 
+	image_to_draw_poygons_in->get_number_of_pixels();
+	
+	double mean_number_of_image_lines = 
+	sqrt((double)number_of_pixels_of_image);
+	
+	double line_thickness_per_image_line = 2.0/1e3;
+	double circle_radius_in_pixel_per_image_line = 5.0/1e3;
+	double circle_thickness_in_pixel_per_image_line = 2.0/1e3;
+	double text_thickness_per_image_line  = 2/1e3;	
+	
+	// line specific information
+	int line_thickness = (int)
+	ceil(line_thickness_per_image_line*mean_number_of_image_lines);
+	int line_Type = 8;		
+	 
+	// mirror ID spcific information
+	cv::Point location_of_mirror_ID;
+	int 	text_thickness = (int)
+	ceil(text_thickness_per_image_line*mean_number_of_image_lines);
+	double 	text_fontScale = 0.75;
+	int 	text_fontFace = CV_FONT_HERSHEY_SIMPLEX;
+	
+	// circle spcific information
+	double circle_radius_in_pixel = 
+	circle_radius_in_pixel_per_image_line*mean_number_of_image_lines;
+	int circle_thickness_in_pixel = 
+	(int)ceil(
+	circle_thickness_in_pixel_per_image_line*mean_number_of_image_lines
+	);
+	int circle_lineType	=8;	
+	//==================================================================
+	// for each mirror polygon group
+	//==================================================================
+	for(	int mirror_itterator = 0;
+			mirror_itterator<list_of_pointers_to_mirrors.size();
+			mirror_itterator++)
+	{
+		int number_of_points = 
+		list_of_pointers_to_mirrors.at(mirror_itterator)->
+		list_of_points_defining_mirror_polygon.size();
+		
+		if(number_of_points==0){
+			if(verbosity){
+				std::cout<<"reflector -> ";
+				std::cout<<"update_calibration_image_with_polygons -> ";
+				std::cout<<"No polygon of mirror ID:";
+				std::cout<<list_of_pointers_to_mirrors.at(mirror_itterator)->
+				get_mirror_ID()<<std::endl;
+			}
+		}else{
+			if(verbosity){
+				std::cout<<"reflector -> ";
+				std::cout<<"update_calibration_image_with_polygons -> ";
+				std::cout<<"Draw polygon of mirror ID:";
+				std::cout<<list_of_pointers_to_mirrors.at(mirror_itterator)->
+				get_mirror_ID()<<std::endl;
+			}
+			
+			// reset mirror ID location
+			location_of_mirror_ID.x=0;
+			location_of_mirror_ID.y=0;
+			//==========================================================
+			// for each line to draw
+			//==========================================================
+			for(int point_itterator=0; 
+				point_itterator<number_of_points;
+				point_itterator++)
+			{
+					// init start point of line
+					cv::Point start_point = 
+					list_of_pointers_to_mirrors.at(mirror_itterator)->
+					list_of_points_defining_mirror_polygon.
+					at(point_itterator);
+					
+					// init end point of line
+					cv::Point end_point;
+					if((point_itterator+1) == 
+						list_of_pointers_to_mirrors.
+						at(mirror_itterator)->
+						list_of_points_defining_mirror_polygon.size())
+					{
+						end_point = 
+						list_of_pointers_to_mirrors.
+						at(mirror_itterator)->
+						list_of_points_defining_mirror_polygon.at(0);
+					}else{
+						end_point = 
+						list_of_pointers_to_mirrors.
+						at(mirror_itterator)->
+						list_of_points_defining_mirror_polygon.
+						at(point_itterator+1);
+					}
+					// draw line
+					if(verbosity){
+						std::cout<<"reflector -> ";
+						std::cout<<"update_calibration_image_with_polygons";
+						std::cout<<" -> ";
+						std::cout<<"draw line "<<point_itterator+1;
+						std::cout<<": ("<<start_point.x<<"|"<<start_point.y;
+						std::cout<<")->("<<end_point.x;
+						std::cout<<"|"<<end_point.y<<")"<<std::endl;
+					}
+					if(	list_of_pointers_to_mirrors.
+						at(mirror_itterator)->
+						get_mirror_ID()
+						==
+						mirror_ID_of_mirror_to_highlight
+					)
+					{
+						//colour highlighted
+						//std::cout<<"highlighted !!!"<<std::endl;
+						cv::line(
+						image_to_draw_poygons_in->
+						image_matrix,
+						start_point,
+						end_point,
+						cv::Scalar( 0, 255, 0),//Blue,Green,Red
+						line_thickness,
+						line_Type 
+						);
+					}else{
+						//colour default
+						cv::line(
+						image_to_draw_poygons_in->
+						image_matrix,
+						start_point,
+						end_point,
+						cv::Scalar( 0, 0, 255),//Blue,Green,Red
+						line_thickness,
+						line_Type 
+						);
+					}
+					
+					// calculate mirror ID location
+					location_of_mirror_ID = location_of_mirror_ID +
+					start_point;
+					
+					// draw a filled circle
+					if(	list_of_pointers_to_mirrors.
+						at(mirror_itterator)->get_mirror_ID()
+						==
+						mirror_ID_of_mirror_to_highlight
+					)
+					{
+						//colour highlighted
+						cv::circle( 
+						image_to_draw_poygons_in->
+						image_matrix,
+						start_point,
+						circle_radius_in_pixel,
+						cv::Scalar( 128, 255, 0 ),
+						circle_thickness_in_pixel,
+						circle_lineType );
+					}else{
+						//colour default
+						cv::circle( 
+						image_to_draw_poygons_in->
+						image_matrix,
+						start_point,
+						circle_radius_in_pixel,
+						cv::Scalar( 128, 0, 255 ),
+						circle_thickness_in_pixel,
+						circle_lineType );
+					}
+				}
+		
+			// draw mirror ID
+			// calculate mirror ID location
+			location_of_mirror_ID.x = 
+			(location_of_mirror_ID.x)/number_of_points;
+			
+			location_of_mirror_ID.y = 
+			(location_of_mirror_ID.y)/number_of_points;
+			
+			//create text ID to display
+			std::stringstream text_to_put_in_image;
+			text_to_put_in_image<<"ID";
+			text_to_put_in_image<<list_of_pointers_to_mirrors.
+			at(mirror_itterator)->get_mirror_ID();
+			
+			// put text to sccan_image
+			if(	list_of_pointers_to_mirrors.at(mirror_itterator)->
+				get_mirror_ID()
+				==
+				mirror_ID_of_mirror_to_highlight)
+			{
+				//colour highlighted
+				cv::putText(
+				image_to_draw_poygons_in->
+				image_matrix,
+				text_to_put_in_image.str(),
+				location_of_mirror_ID,
+				text_fontFace,// fontFace
+				text_fontScale,// fontScale
+				cv::Scalar( 64, 255, 64 ),//Blue,Green,Red
+				text_thickness,
+				8
+				);
+			}else{
+				//colour default
+				//colour highlighted
+				cv::putText(
+				image_to_draw_poygons_in->
+				image_matrix,
+				text_to_put_in_image.str(),
+				location_of_mirror_ID,
+				text_fontFace,// fontFace
+				text_fontScale,// fontScale
+				cv::Scalar( 64, 64, 255 ),//Blue,Green,Red
+				text_thickness,
+				8
+				);
+			}
+		}
+	}
+	flag_calibration_image_with_polygons_created = true;
+	
+	if(verbosity){
+		std::cout<<"reflector -> ";
+		std::cout<<"update_calibration_image_with_polygons -> ";
+		std::cout<<"end"<<std::endl;	
+	}
+}*/
+//======================================================================
+/*
+void reflector::update_calibration_image_with_polygons(bool highlight){
+	
+	reflector_calibration_image_with_polygons=
 	reflector_calibration_image;	
 	
 	uint mirror_ID_of_mirror_to_highlight;
@@ -599,7 +923,7 @@ void reflector::update_calibration_image_with_polygons(bool highlight){
 	cv::Point location_of_mirror_ID;
 	int 	text_thickness = (int)
 	ceil(text_thickness_per_image_line*mean_number_of_image_lines);
-	double 	text_fontScale = 1.5;
+	double 	text_fontScale = 0.75;
 	int 	text_fontFace = CV_FONT_HERSHEY_SIMPLEX;
 	
 	// circle spcific information
@@ -803,6 +1127,7 @@ void reflector::update_calibration_image_with_polygons(bool highlight){
 		std::cout<<"end"<<std::endl;	
 	}
 }
+*/
 //======================================================================
 void reflector::manipulate_mirror_polygon(){
 	
@@ -951,6 +1276,56 @@ void reflector::toggle_verbosity(){
 	
 }
 //======================================================================
+void reflector::check_mirror_polygon_position_in_live_reflector_display(
+double desired_exposure_time_for_reflector_camera_in_ms){
+	
+	sccan_image live_reflector_image;
+	
+	
+	if(verbosity){
+		std::cout << "reflector -> ";
+		std::cout << "check_mirror_polygon_position_in_live_reflector_display() -> ";
+		std::cout << "image name -> live reflector mirror polygon check";
+		std::cout << "\n";
+	}	
+	
+	//double 
+	//iteration_start_exposure_time_for_reflector_image_in_ms = 10.0;
+	
+	double desired_relative_maximal_camera_response = 0.9;
+
+	if(verbosity){
+		std::cout << "reflector -> ";
+		std::cout << "check_mirror_polygon_position_in_live_reflector_display() -> ";
+		std::cout << "desired camera response: " << desired_relative_maximal_camera_response;			
+		std::cout << "\n";
+	}	
+
+	//~ pointer_to_reflector_camera->acquire_image(
+	//~ &iteration_start_exposure_time_for_reflector_image_in_ms,
+	//~ desired_relative_maximal_camera_response);
+
+	pointer_to_reflector_camera->acquire_image(
+	&desired_exposure_time_for_reflector_camera_in_ms);
+	
+	live_reflector_image = 
+	pointer_to_reflector_camera->get_latest_image();
+	
+	live_reflector_image.
+	set_name("live reflector mirror polygon check");
+	
+	update_image_with_polygons(&live_reflector_image,false);
+
+	if(verbosity){
+		std::cout << "reflector -> ";
+		std::cout << "check_mirror_polygon_position_in_live_reflector_display() -> ";
+		std::cout << "image aquired, mirror polygons added, ready to display image";			
+		std::cout << "\n";
+	}	
+	
+	live_reflector_image.disp_image();
+}
+//======================================================================
 // list of mirrors
 //======================================================================
 std::vector<mirror*> list_of_pointers_to_mirrors;
@@ -1044,6 +1419,10 @@ bool reflector::pop_mirror(uint old_mirror_ID){
 		{std::cout<<"was not found in mirror list!";}
 		std::cout<<std::endl;
 	}
+	
+	if(mirror_popped)
+	pointer_to_current_mirror_to_work_with = NULL;
+	
 	return mirror_popped;		
 }
 //======================================================================
