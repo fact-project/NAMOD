@@ -34,7 +34,11 @@ fill_sccan_matrix(){
 	pointer_to_sccan_point_pair_handler->
 	update_list_of_runs_in_current_directory();
 
+	int sccan_point_itterator;
+	#pragma omp parallel private(sccan_point_itterator) 
+	
 	//for all sccan points
+	#pragma omp for schedule(dynamic) 	
 	for(int sccan_point_itterator = 0;
 	sccan_point_itterator<
 	pointer_to_sccan_point_pair_handler->
@@ -413,6 +417,14 @@ draw_mirror_response(uint mirror_iterator){
 	sccan_matrix.at(0).at(mirror_iterator)->get_mirror_ID();
 	plot_file_name << "_response_map";
 	plot_file_name << filename_extension;
+
+	std::stringstream csv_file_name;
+	csv_file_name << "mirror_ID" <<
+	sccan_matrix.at(0).at(mirror_iterator)->get_mirror_ID();
+	csv_file_name << "_response_map";
+	csv_file_name << ".csv";
+	
+	std::stringstream csv_table;
 	
 	if(sccan_point_analysis_verbosity){
 		std::cout << "sccan_point_analysis -> ";
@@ -430,22 +442,35 @@ draw_mirror_response(uint mirror_iterator){
 	mglData rel_poi_dir_of_star_y_in_deg(sccan_matrix.size());
 	mglData mirror_response(sccan_matrix.size());
 	
+	csv_table << "dir_X [deg],dir_Y [deg],";
+	if(normalize_mirror_response)
+	{csv_table << "normalized_mirror_response [1]";}
+	else
+	{csv_table << "mirror_response [bulbs]";}
+	csv_table << "\n";
+	
 	for(
 	uint sccan_point_iterator=0;
 	sccan_point_iterator<sccan_matrix.size();
 	sccan_point_iterator++){
-	
+		
 		rel_poi_dir_of_star_x_in_deg.a[ sccan_point_iterator ] = 
 		(360.0/(2.0*M_PI)) *  
 		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
 		get_star_position_relative_to_pointing_direction().
 		direction_in_x_in_radiant;
 	
+		csv_table << 
+		rel_poi_dir_of_star_x_in_deg.a[ sccan_point_iterator ] << ",";
+	
 		rel_poi_dir_of_star_y_in_deg.a[ sccan_point_iterator ] = 
 		(360.0/(2.0*M_PI)) * 
 		sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
 		get_star_position_relative_to_pointing_direction().
 		direction_in_y_in_radiant;
+	
+		csv_table << 
+		rel_poi_dir_of_star_y_in_deg.a[ sccan_point_iterator ] << ",";
 		
 		if(normalize_mirror_response){
 			mirror_response.a[ sccan_point_iterator ] = 
@@ -456,7 +481,14 @@ draw_mirror_response(uint mirror_iterator){
 			sccan_matrix.at(sccan_point_iterator).at(mirror_iterator)->
 			get_mirror_light_flux();		
 		}
+
+		csv_table << mirror_response.a[ sccan_point_iterator ];
+		csv_table << "\n";
+		
 	}
+	
+	export_text( csv_file_name.str(),csv_table.str());
+	
 	//==================================================================	
 	// fit 2D gaussian
 	//==================================================================	
@@ -616,6 +648,10 @@ run_anaysis(){
 	
 	std::stringstream instruction_table;
 	
+	uint MIit;
+	#pragma omp parallel shared(instruction_table) private(MIit) 
+	
+	#pragma omp for schedule(dynamic) 
 	for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
 		
 		if(true){
@@ -642,7 +678,7 @@ run_anaysis(){
 			
 		);	
 	}
-	
+
 	std::cout << instruction_table.str();
 	
 	// timestamp in filename

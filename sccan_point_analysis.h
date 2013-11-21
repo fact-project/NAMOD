@@ -15,6 +15,8 @@
 #include "sccan_point_pair_handler.h"
 #include "reflector.h"
 #include "ueye_camera.h"
+// parallel computing
+#include <omp.h>
 
 // plotting
 #include <mgl2/mgl.h>

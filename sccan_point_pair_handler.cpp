@@ -200,42 +200,41 @@ acquire_sccan_points(int number_of_sccan_points_to_acquire){
 sccan_point_pair sccan_point_pair_handler::
 acquire_single_sccan_point(
 bool *pointer_to_exposure_range_is_good){
-		
-		sccan_point_pair current_sccan_point
-		(sccan_run_number,verbosity);
-		
-		current_sccan_point.
-		set_cameras(pointer_to_star_camera,pointer_to_reflector_camera);
-		
-		
-		bool max_number_of_exposure_manipulations_has_been_exceeded 
-		= false;
-		
-		// acquire sccan point
-		current_sccan_point.acquire_sccan_images(
-		&star_camera_last_good_exposure_time_in_ms,
-		&reflector_camera_last_good_exposure_time_in_ms,
-		star_camera_desired_max_relative_camera_response,	
-		reflector_camera_desired_max_relative_camera_response,		
-		max_number_of_exposure_manipulations,
-		&max_number_of_exposure_manipulations_has_been_exceeded
-		);
-		
-		if(max_number_of_exposure_manipulations_has_been_exceeded){
-			std::cout<<"sccan_point_pair_handler -> ";
-			std::cout<<"acquire_sccan_points() -> ";
-			std::cout<<"desired exposure time can not be reached!"<<std::endl;
-			*pointer_to_exposure_range_is_good = false;
-		}else{
-			sccan_run_number++;
-		}
-		
-		// find bright star
-		current_sccan_point.find_bright_star_in_star_image(
-		threshold_in_sigmas_for_star_detection,
-		star_recognition_one_sigma_radius_in_degrees
-		);
-		
+
+	sccan_point_pair current_sccan_point
+	(sccan_run_number,verbosity);
+	
+	current_sccan_point.
+	set_cameras(pointer_to_star_camera,pointer_to_reflector_camera);
+				
+	bool max_number_of_exposure_manipulations_has_been_exceeded 
+	= false;
+	
+	// acquire sccan point
+	current_sccan_point.acquire_sccan_images(
+	&star_camera_last_good_exposure_time_in_ms,
+	&reflector_camera_last_good_exposure_time_in_ms,
+	star_camera_desired_max_relative_camera_response,	
+	reflector_camera_desired_max_relative_camera_response,		
+	max_number_of_exposure_manipulations,
+	&max_number_of_exposure_manipulations_has_been_exceeded
+	);
+	
+	if(max_number_of_exposure_manipulations_has_been_exceeded){
+		std::cout<<"sccan_point_pair_handler -> ";
+		std::cout<<"acquire_sccan_points() -> ";
+		std::cout<<"desired exposure time can not be reached!"<<std::endl;
+		*pointer_to_exposure_range_is_good = false;
+	}else{
+		sccan_run_number++;
+	}
+	
+	// find bright star
+	current_sccan_point.find_bright_star_in_star_image(
+	threshold_in_sigmas_for_star_detection,
+	star_recognition_one_sigma_radius_in_degrees
+	);
+	
 	return current_sccan_point;
 }
 //======================================================================
@@ -355,16 +354,16 @@ interaction(){
 	"modify recognition radius");	
 	
 	add_control
-	(key_user_wants_to_end_taking_sccan_points,
-	"back to main menu");
-
-	add_control
 	(key_modify_star_cam_desired_max_rel_respone,
 	"modify star camera max desired rel. respone");
 
 	add_control
 	(key_modify_refl_cam_desired_max_rel_respone,
 	"modify reflector camera max desired rel. respone");
+	
+	add_control
+	(key_user_wants_to_end_taking_sccan_points,
+	"back to main menu");	
 	
 	std::string user_input;
 	

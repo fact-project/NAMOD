@@ -561,7 +561,8 @@ sccan_image *image_to_draw_poygons_in,bool highlight){
 
 }
 //======================================================================
-std::string mirror::get_manipulation_instructions(pointing_direction
+std::string mirror::
+get_manipulation_instructions(pointing_direction
 DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	
 	calculate_mirror_missalignment(
@@ -578,10 +579,14 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			std::stringstream manual;
 			manual<<"_______________________________________________\n";
 			manual<<"Mirror ID "<<mirror_ID<<"\n";
-			
+			//==========================================================
+			// bolts
+			//==========================================================			
 			manual<<"Bolt 1: ";
+			
 			if(manipulation_revolutions_of_first_tripod_leg_in_revs>0.0)
 			manual<<"+";
+			
 			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs;
 			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_first_tripod_leg_in_revs
@@ -589,8 +594,10 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			manual<<"deg\n";
 			
 			manual<<"Bolt 2: ";
+			
 			if(manipulation_revolutions_of_second_tripod_leg_in_revs>0.0)
 			manual<<"+";
+			
 			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs;
 			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_second_tripod_leg_in_revs
@@ -598,14 +605,19 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			manual<<"deg\n";
 			
 			manual<<"Bolt 3: ";
+			
 			if(manipulation_revolutions_of_third_tripod_leg_in_revs>0.0)
 			manual<<"+";
+			
 			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs;
 			manual<<"revs / ";
 			manual<<manipulation_revolutions_of_third_tripod_leg_in_revs
 			*360.0;
 			manual<<"deg\n";
 			manual<<"\n";
+			//==========================================================
+			// directions
+			//==========================================================
 			manual<<"direction of star relative to telescope for";
 			manual<<"brightest mirror response:\n";
 			manual<<"x: "<<
@@ -617,6 +629,7 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			get_y_tilt_prompt_in_deg_min_sec();	
 			manual<<"\n";
 			manual<<"\n";
+			manual<<"___direction___\n";
 			manual<<"direction of mirror relative to telescope which ";
 			manual<<"will be compensated:\n";				
 			manual<<"x: "<<
@@ -626,9 +639,27 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			manual<<"y: "<<
 			MirrorMisalignmentDirection.
 			get_y_tilt_prompt_in_deg_min_sec();	
-			manual<<"\n";			
+			manual<<"\n";		
+			//==========================================================
+			// tripod
+			//==========================================================
+			manual<<"\n";	
+			manual<<"__tripod___\n";	
+			manual<<"radius     : "<<tripod_radius_in_m<<"m\n";
+			manual<<"z rotation : "<<tripod_orientation_z_in_rad<<"rad";			
+			manual<<" / "<<tripod_orientation_z_in_rad*(360.0/(2.0*M_PI))<<"deg\n";
+			manual<<"bolt pitch : "<<pitch_of_bolt_in_m_per_revolution<<"m/rev\n";
+			manual<<"\n";
+			manual<<"leg 1 : "<<position_of_first_tripod_leg.get_string()<<"\n";
+			manual<<"leg 2 : "<<position_of_second_tripod_leg.get_string()<<"\n";
+			manual<<"leg 3 : "<<position_of_third_tripod_leg.get_string()<<"\n";			
+			manual<<"\n";
+			manual<<"leg 1 offset : "<<manipulation_distance_of_first_tripod_leg_in_m<<"m\n";			
+			manual<<"leg 2 offset : "<<manipulation_distance_of_second_tripod_leg_in_m<<"m\n";	
+			manual<<"leg 3 offset : "<<manipulation_distance_of_third_tripod_leg_in_m<<"m\n";				
+	
 			return manual.str();
-		
+			
 		}else{
 			
 			std::cout<<"mirror "<<mirror_ID;
@@ -658,7 +689,8 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	}
 }
 //======================================================================
-void mirror::calculate_mirror_missalignment(pointing_direction
+void mirror::
+calculate_mirror_missalignment(pointing_direction
 DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	
 	MirrorMisalignmentDirection =
@@ -667,7 +699,8 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	flag_misalignment_angles_have_been_calculated = true;
 }
 //======================================================================
-void mirror::calculate_bolt_manipulation_distances(){
+void mirror::
+calculate_bolt_manipulation_distances(){
 	
 	if(flag_misalignment_angles_have_been_calculated){
 		
@@ -776,8 +809,8 @@ void mirror::calculate_bolt_manipulation_distances(){
 	
 }
 //======================================================================
-void mirror::set_mirror_tripod(
-double new_tripod_radius_in_m,
+void mirror::
+set_mirror_tripod(double new_tripod_radius_in_m,
 double new_pitch_of_bolt_in_m_per_revolution){
 	
 	tripod_radius_in_m = new_tripod_radius_in_m;
@@ -788,9 +821,10 @@ double new_pitch_of_bolt_in_m_per_revolution){
 	init_tripod();
 }
 //======================================================================
-void mirror::init_tripod(){
+void mirror::
+init_tripod(){
 	
-	double one_third_PI = M_PI*1.0/3.0;
+	double two_third_PI = M_PI*2.0/3.0;
 	
 	position_of_first_tripod_leg.set_vec3D(
 	tripod_radius_in_m*cos(tripod_orientation_z_in_rad),
@@ -798,13 +832,13 @@ void mirror::init_tripod(){
 	0.0);
 	
 	position_of_second_tripod_leg.set_vec3D(
-	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+one_third_PI),
-	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+one_third_PI),
+	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+two_third_PI),
+	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+two_third_PI),
 	0.0);
 	
 	position_of_third_tripod_leg.set_vec3D(
-	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+2.0*one_third_PI),
-	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+2.0*one_third_PI),
+	tripod_radius_in_m*cos(tripod_orientation_z_in_rad+2.0*two_third_PI),
+	tripod_radius_in_m*sin(tripod_orientation_z_in_rad+2.0*two_third_PI),
 	0.0);
 	
 	if(verbosity){
@@ -824,7 +858,8 @@ void mirror::init_tripod(){
 	}	
 }
 //======================================================================
-void mirror::calculate_bolt_manipulation_revolutions(){
+void mirror::
+calculate_bolt_manipulation_revolutions(){
 	if(flag_manipulation_distances_have_been_calculated){
 		
 		if(verbosity){

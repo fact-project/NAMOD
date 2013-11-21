@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 2.8)
 #=======================================================================
 # compiler flags
-set (CMAKE_CXX_FLAGS "-std=gnu++11 -O3") #-Wall
+set (CMAKE_CXX_FLAGS "-std=gnu++11  -O3") #-Wall
 #=======================================================================
 project( dual_camera )
 include_directories(/usr/include)
@@ -87,3 +87,8 @@ if(MGL_HAVE_QT)
 	target_link_libraries(dual_camera mgl-qt)
 endif(MGL_HAVE_QT)
 #=======================================================================
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()

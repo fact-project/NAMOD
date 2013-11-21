@@ -1196,6 +1196,10 @@ bool ueye_camera::camera_status(){
 	}	
 }
 //======================================================================
+bool ueye_camera::is_initialized(){
+	return initialization_succesfull;
+}
+//======================================================================
 void ueye_camera::toggle_verbosity(){
 	verbosity = !verbosity;
 	intrinsic.toggle_verbosity(verbosity);

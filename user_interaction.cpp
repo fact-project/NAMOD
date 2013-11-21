@@ -15,7 +15,7 @@ std::string new_description){
 		
 		if(verbosity){
 			std::cout<<"user_interaction -> add_control() -> Key >";
-			std::cout<<new_key<<"< was added to control key list"<<std::endl;
+			std::cout<<new_key<<"< was added to control key list\n";
 		}
 	}else{
 		std::cout<<"user_interaction -> add_control() -> Key >";
@@ -27,7 +27,7 @@ std::string user_interaction::get_control_options_prompt(){
 	std::stringstream out;
 	out<<"| "<<std::endl;
 	
-	for(int key_itterator = 0;
+	for(uint key_itterator = 0;
 	key_itterator<list_of_keys.size();
 	key_itterator++){
 	out<<"| ["<<list_of_keys.at(key_itterator)<<"]";
@@ -47,7 +47,8 @@ std::string user_interaction::get_control_options_prompt(){
 	return out.str();
 }
 //======================================================================
-void user_interaction::update_status_prompt(std::string new_status_prompt){
+void user_interaction::
+update_status_prompt(std::string new_status_prompt){
 	status_prompt = new_status_prompt;
 	status_prompt += get_control_options_prompt();
 }
@@ -80,7 +81,8 @@ void user_interaction::get_user_input(){
 	valid_user_input = user_input;
 }
 //======================================================================
-bool user_interaction::compare_user_input_and_keys(std::string user_input){
+bool user_interaction::
+compare_user_input_and_keys(std::string user_input){
 	for(int key_itterator = 0;
 	key_itterator<list_of_keys.size();
 	key_itterator++){
@@ -161,8 +163,10 @@ int user_interaction::ask_user_for_integer
 	return atoi(user_input.c_str());
 }
 //======================================================================
-int user_interaction::ask_user_for_integer
-(std::string description,std::vector<int> *pointer_to_list_of_valid_integer){
+int user_interaction::
+ask_user_for_integer(
+std::string description,
+std::vector<int> *pointer_to_list_of_valid_integer){
 	if(pointer_to_list_of_valid_integer->size()==0){
 		std::cout<<"user_interaction -> ask_user_for_integer() -> ";
 		std::cout<<"the list of valid integers is empty!"<<std::endl;
@@ -281,7 +285,8 @@ std::string user_interaction::get_alphanumeric_string_by_user(){
 		int sys_return =  system("clear");
 		std::cout<<get_menu_header();
 		std::cout<<status_prompt;
-		std::cout<<"Enter a string (no points or whitespaces!)"<<std::endl;
+		std::cout<<"Enter a string (no points or whitespaces!)";
+		std::cout<<std::endl;
 		std::cout<<last_warning.str();		
 		last_warning.str("");
 		std::cout<<"->";
@@ -331,8 +336,9 @@ std::string user_interaction::get_menu_header(){
 return out.str();
 }
 //======================================================================
-std::string user_interaction::get_line_of_specific_character
-(std::string string_to_repeat,int number_of_repeatations){
+std::string user_interaction::
+get_line_of_specific_character(
+std::string string_to_repeat,int number_of_repeatations){
 	std::stringstream out;
 	for(
 	int string_itterator=0;
@@ -345,8 +351,9 @@ std::string user_interaction::get_line_of_specific_character
 	return out.str();
 }
 //======================================================================
-double user_interaction::ask_user_for_non_zero_float
-(std::string description,double lower_limit,double upper_limit){
+double user_interaction::
+ask_user_for_non_zero_float(
+std::string description,double lower_limit,double upper_limit){
 	
 	if(lower_limit>=upper_limit){
 		std::cout<<"user_interaction -> ask_user_for_float() -> ";
@@ -402,7 +409,8 @@ double user_interaction::ask_user_for_non_zero_float
 	return atof(user_input.c_str());	
 }
 //======================================================================
-std::vector <std::string> user_interaction::get_list_of_files_in_directory
+std::vector <std::string> user_interaction::
+get_list_of_files_in_directory
 ( const std::string& path = std::string() ){
 	
 	if(verbosity){
@@ -434,9 +442,8 @@ std::vector <std::string> user_interaction::get_list_of_files_in_directory
 	return list_of_all_files_in_directory;
 }
 //======================================================================
-std::string user_interaction::make_nice_line_with_dots(
-std::string left_text,
-std::string right_text){
+std::string user_interaction::
+make_nice_line_with_dots(std::string left_text,std::string right_text){
 	
 	std::stringstream out;
 	out<<left_text;
@@ -459,8 +466,8 @@ std::string right_text){
 	return out.str();
 }
 //======================================================================
-void user_interaction::export_text(
-std::string filename,std::string text){
+void user_interaction::
+export_text(std::string filename,std::string text){
 
 	if(verbosity){
 		std::cout << "user_interaction -> export_text() -> ";

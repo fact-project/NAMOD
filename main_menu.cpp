@@ -131,7 +131,17 @@ void main_menu::interaction(){
 	//==================================================================
 	if(valid_user_input.
 	compare(key_user_wants_to_quick_align_a_mirror)==0){
-		pointer_to_quick_align->interaction();
+		
+		if(
+		pointer_to_star_camera->camera_status()
+		&&
+		pointer_to_reflector_camera->camera_status()
+		){
+			pointer_to_quick_align->interaction();
+		}else{
+			std::cout << "main_menu -> interaction -> ";
+			std::cout << "camera(s) offline !\n";
+		}
 	}
 	//==================================================================
 	if(valid_user_input.compare(key_toggle_verbosity)==0){
