@@ -206,8 +206,11 @@ bool sccan_point_pair::load_sccan_point_configuration
 	//==================================================================
 	name_of_sccan_point_pair_to_load +=
 	file_name_extension_for_sccan_point_configuration_file;
-	std::cout<<"sccan_point_pair -> load_sccan_point_configuration() -> ";
-	std::cout<<name_of_sccan_point_pair_to_load<<std::endl;
+	
+	std::stringstream out;
+	out<<"sccan_point_pair -> load_sccan_point_configuration() -> ";
+	out<<name_of_sccan_point_pair_to_load<<"\n";
+	std::cout << out.str();
 	
 	try
 	{

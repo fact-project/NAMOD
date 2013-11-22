@@ -25,6 +25,7 @@ reflector::reflector(ueye_camera *new_pointer_to_reflector_camera){
 	toggle_verbosity(verbosity);
 	
 	pointer_to_reflector_camera = new_pointer_to_reflector_camera;
+	show_tripods = false;
 }
 //======================================================================
 void reflector::initialize_default_reflector(){
@@ -64,6 +65,10 @@ void reflector::interaction(){
 	std::string key_show_calibration_image_with_polygons = "sp";
 	add_control(key_show_calibration_image_with_polygons,
 	"show calibration image with mirror polygons");
+
+	std::string key_toggle_tripods_in_images = "tt";
+	add_control(key_toggle_tripods_in_images,
+	"toggle tripods");
 
 	std::string key_check_polygon_position_in_live_reflector_display = "cp";
 	add_control(key_check_polygon_position_in_live_reflector_display,
@@ -127,6 +132,10 @@ void reflector::interaction(){
 		reflector_calibration_image_with_polygons.disp_image();
 	}
 	//==================================================================
+	if(valid_user_input.compare(key_toggle_tripods_in_images)==0){
+		show_tripods = !show_tripods; 
+	}	
+	//==================================================================
 	if(valid_user_input.compare(
 	key_check_polygon_position_in_live_reflector_display)==0){
 		
@@ -171,8 +180,14 @@ void reflector::interaction(){
 	//==================================================================
 	if(valid_user_input.compare(key_delete_current_mirror)==0){
 		// delete current mirror from list
-		pop_mirror
-		(pointer_to_current_mirror_to_work_with->get_mirror_ID());
+		if(pointer_to_current_mirror_to_work_with == NULL){
+			std::cout << "reflector -> interaction -> delete mirror ->";
+			std::cout << " no current mirror ID to delete!\n";
+		}else{		
+			pop_mirror
+			(pointer_to_current_mirror_to_work_with->get_mirror_ID());
+		}
+
 	}
 	//==================================================================
 	if(valid_user_input.compare(key_choose_mirror_ID)==0){	
@@ -243,6 +258,7 @@ bool reflector::set_reflector_calibration_image(std::string image_file_name){
 	}
 }
 //======================================================================
+
 void reflector::disp_status(){
 	std::cout<<get_reflector_prompt();
 }
@@ -571,6 +587,11 @@ std::string reflector::get_reflector_prompt(){
 	info<<pitch_of_bolt_in_m_per_revolution<<"m/revolution";
 	out<<make_nice_line_with_dots("| pitch of mirror bolts",info.str());
 	
+	// toggle tripod displaying
+	info.str("");
+	if(show_tripods){info<<"TRUE";}else{info<<"FALSE";}
+	out<<make_nice_line_with_dots("| show tripods",info.str());
+	
 	out<<"|";
 	
 	out<<get_line_of_specific_character("_",command_line_columns-1);
@@ -596,6 +617,14 @@ void reflector::update_calibration_image_with_polygons(bool highlight){
 //======================================================================
 void reflector::update_image_with_polygons(
 sccan_image *image_to_draw_poygons_in,bool highlight){	
+
+	if(verbosity){
+		std::stringstream out;
+		out<<"reflector -> ";
+		out<<"update_image_with_polygons -> ";
+		out<<"highlighting ";	
+		if(highlight){out<<"TRUE";}else{out<<"FALSE";}
+	}
 	
 	uint mirror_ID_of_mirror_to_highlight;
 	if(pointer_to_current_mirror_to_work_with == 0){
@@ -626,22 +655,30 @@ sccan_image *image_to_draw_poygons_in,bool highlight){
 		get_mirror_ID())
 		highlight_specific_mirror = true;
 		
-
+		if(show_tripods){
+			list_of_pointers_to_mirrors.
+			at(mirror_itterator)->
+			draw_mirror_tripod(
+			image_to_draw_poygons_in,
+			highlight_specific_mirror);		
+		}
+		
 		list_of_pointers_to_mirrors.
 		at(mirror_itterator)->
 		draw_mirror_polygon(
 		image_to_draw_poygons_in,
 		highlight_specific_mirror);
-		
+				
 	}
 	flag_calibration_image_with_polygons_created = true;
 	
 	if(verbosity){
 		std::cout<<"reflector -> ";
 		std::cout<<"update_calibration_image_with_polygons -> ";
-		std::cout<<"end"<<std::endl;	
+		std::cout<<"finished"<<std::endl;	
 	}
 }
+//======================================================================
 /*
 void reflector::update_image_with_polygons(
 sccan_image *image_to_draw_poygons_in,bool highlight){	

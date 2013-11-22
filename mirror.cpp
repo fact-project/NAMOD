@@ -27,7 +27,7 @@ void mirror::initialize(uint new_mirror_ID,bool new_verbosity){
 		
 	// configuration file
 	key_ID = "ID";
-	key_tripod_orientation_z_in_rad ="tripod_orientation_z_in_rad";	
+	key_tripod_orientation_z_in_deg ="tripod_orientation_z_in_deg";	
 	key_list_of_points_defining_mirror_polygon = "polygon";
 	key_polygon_point_pixel_coordinate_x = "x";
 	key_polygon_point_pixel_coordinate_y = "y";
@@ -102,8 +102,8 @@ libconfig::Setting *Mirror_file_handle){
 	
 	//tripod orientation
 	Mirror_file_handle->
-	add(key_tripod_orientation_z_in_rad, libconfig::Setting::TypeFloat) = 
-	tripod_orientation_z_in_rad;
+	add(key_tripod_orientation_z_in_deg, libconfig::Setting::TypeFloat) = 
+	tripod_orientation_z_in_rad*(360.0/(2.0*M_PI));
 	
 	//list_of_pixes_defining_polygon
 	if(
@@ -163,8 +163,12 @@ libconfig::Setting *Mirror_file_handle){
 	}
 	//==================================================================
 	if(Mirror_file_handle->lookupValue(
-	key_tripod_orientation_z_in_rad,
+	key_tripod_orientation_z_in_deg,
 	 tripod_orientation_z_in_rad)){
+		
+		tripod_orientation_z_in_rad = 
+		tripod_orientation_z_in_rad*((2.0*M_PI)/360.0);
+		
 		if(verbosity){
 			std::cout<<"mirror -> import_configuration() ->";
 			std::cout<<" tripod orientation loaded ";
@@ -561,6 +565,169 @@ sccan_image *image_to_draw_poygons_in,bool highlight){
 
 }
 //======================================================================
+void mirror::
+draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"draw_mirror_tripod -> ";
+		std::cout<<std::endl;	
+	}
+	
+	// to normalize the lines and text fonts to be drawed the image size
+	// is taken into account
+	int number_of_pixels_of_image = 
+	image_to_draw_tripod_in->get_number_of_pixels();
+	
+	double mean_number_of_image_lines = 
+	sqrt((double)number_of_pixels_of_image);
+	
+	double line_thickness_per_image_line = 2.0/1e3;
+	double circle_radius_in_pixel_per_image_line = 5.0/1e3;
+	double circle_thickness_in_pixel_per_image_line = 2.0/1e3;
+	double text_thickness_per_image_line  = 2/1e3;	
+	
+	// line specific information
+	int line_thickness = (int)
+	ceil(line_thickness_per_image_line*mean_number_of_image_lines);
+	int line_Type = 8;		
+	 
+	// mirror ID spcific information
+	cv::Point location_of_mirror_ID;
+	int 	text_thickness = (int)
+	ceil(text_thickness_per_image_line*mean_number_of_image_lines);
+	double 	text_fontScale = 0.75;
+	int 	text_fontFace = CV_FONT_HERSHEY_SIMPLEX;
+	
+	// circle spcific information
+	double circle_radius_in_pixel = 
+	circle_radius_in_pixel_per_image_line*mean_number_of_image_lines;
+	int circle_thickness_in_pixel = 
+	(int)ceil(
+	circle_thickness_in_pixel_per_image_line*mean_number_of_image_lines
+	);
+	int circle_lineType	=8;	
+	//==================================================================
+	
+	// center position of tripod is the mean position of the
+	// enclosing polygon
+	cv::Point center_of_tripod = list_of_Points_inside_mirror_polygon.
+	get_mean_of_pixel_distribution();
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"draw_mirror_tripod -> ";
+		std::cout<<"center of tripod ";
+		std::cout<<"x: "<<center_of_tripod.x<<"px, ";
+		std::cout<<"y: "<<center_of_tripod.y<<"px, ";
+		std::cout<<std::endl;	
+	}
+
+	//length of tripod leg
+	double tripod_leg_lenght_in_pixels = 
+	sqrt(list_of_Points_inside_mirror_polygon.size());
+	
+	tripod_leg_lenght_in_pixels = tripod_leg_lenght_in_pixels*0.45;
+	
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"draw_mirror_tripod -> ";
+		std::cout<<"tripod_leg_lenght_in_pixels =  ";
+		std::cout<<tripod_leg_lenght_in_pixels<<"px";
+		std::cout<<std::endl;	
+	}	
+	
+	double two_third_pi = M_PI*2.0/3.0;
+	 
+	// the x coordinates in the image are flipped to orientate 
+	// x axis as in star camera frame
+	 
+	//first leg
+	cv::Point first_leg;
+	first_leg.x = center_of_tripod.x - 
+	cos(tripod_orientation_z_in_rad)*tripod_leg_lenght_in_pixels;
+	first_leg.y = center_of_tripod.y + 
+	sin(tripod_orientation_z_in_rad)*tripod_leg_lenght_in_pixels;
+	
+	cv::line(
+	image_to_draw_tripod_in->image_matrix,
+	center_of_tripod,
+	first_leg,
+	cv::Scalar( 128, 255, 0),//Blue,Green,Red
+	line_thickness,
+	line_Type );
+
+	cv::putText(
+	image_to_draw_tripod_in->image_matrix,
+	"1",
+	first_leg,
+	text_fontFace,// fontFace
+	text_fontScale,// fontScale
+	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
+	text_thickness/2.0,
+	4);
+	
+	//second leg
+	cv::Point second_leg;
+	second_leg.x = center_of_tripod.x - 
+	cos(two_third_pi+tripod_orientation_z_in_rad)*
+	tripod_leg_lenght_in_pixels;
+	second_leg.y = center_of_tripod.y + 
+	sin(two_third_pi+tripod_orientation_z_in_rad)*
+	tripod_leg_lenght_in_pixels;	
+
+	cv::line(
+	image_to_draw_tripod_in->image_matrix,
+	center_of_tripod,
+	second_leg,
+	cv::Scalar( 128, 255, 0),//Blue,Green,Red
+	line_thickness,
+	line_Type );
+
+	cv::putText(
+	image_to_draw_tripod_in->image_matrix,
+	"2",
+	second_leg,
+	text_fontFace,// fontFace
+	text_fontScale,// fontScale
+	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
+	text_thickness/2.0,
+	4);
+
+	//third leg
+	cv::Point third_leg;
+	third_leg.x = center_of_tripod.x - 
+	cos(2.0*two_third_pi+tripod_orientation_z_in_rad)*
+	tripod_leg_lenght_in_pixels;
+	third_leg.y = center_of_tripod.y + 
+	sin(2.0*two_third_pi+tripod_orientation_z_in_rad)*
+	tripod_leg_lenght_in_pixels;	
+	
+	cv::line(
+	image_to_draw_tripod_in->image_matrix,
+	center_of_tripod,
+	third_leg,
+	cv::Scalar( 128, 255, 0),//Blue,Green,Red
+	line_thickness,
+	line_Type );
+	
+	cv::putText(
+	image_to_draw_tripod_in->image_matrix,
+	"3",
+	third_leg,
+	text_fontFace,// fontFace
+	text_fontScale,// fontScale
+	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
+	text_thickness/2.0,
+	4);
+	
+	//==================================================================
+		
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"draw_mirror_tripod -> ";
+		std::cout<<"end"<<std::endl;	
+	}
+}
+//======================================================================
 std::string mirror::
 get_manipulation_instructions(pointing_direction
 DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
@@ -577,7 +744,8 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			calculate_bolt_manipulation_revolutions();
 			
 			std::stringstream manual;
-			manual<<"_______________________________________________\n";
+			manual<<"=================================================";
+			manual<<"========================\n";
 			manual<<"Mirror ID "<<mirror_ID<<"\n";
 			//==========================================================
 			// bolts
@@ -618,7 +786,8 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			//==========================================================
 			// directions
 			//==========================================================
-			manual<<"direction of star relative to telescope for";
+			manual<<"___direction___\n";
+			manual<<"direction of star relative to telescope for ";
 			manual<<"brightest mirror response:\n";
 			manual<<"x: "<<
 			DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse.
@@ -629,7 +798,6 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			get_y_tilt_prompt_in_deg_min_sec();	
 			manual<<"\n";
 			manual<<"\n";
-			manual<<"___direction___\n";
 			manual<<"direction of mirror relative to telescope which ";
 			manual<<"will be compensated:\n";				
 			manual<<"x: "<<

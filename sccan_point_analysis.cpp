@@ -53,24 +53,28 @@ fill_sccan_matrix(){
 		get_sccan_point_pair_name_at(sccan_point_itterator)
 		)){
 			if(sccan_point_analysis_verbosity){
-				std::cout<<"sccan_point_analysis -> ";
-				std::cout<<"fill_sccan_matrix() -> ";
-				std::cout<<"sccan point "<<(sccan_point_itterator+1);
-				std::cout<<"/"<<	
+				std::stringstream out;
+				out<<"sccan_point_analysis -> ";
+				out<<"fill_sccan_matrix() -> ";
+				out<<"sccan point "<<(sccan_point_itterator+1);
+				out<<"/"<<	
 				pointer_to_sccan_point_pair_handler->
 				get_number_of_sccan_points_in_current_directory();
-				std::cout<<" loading successful.";
-				std::cout<<std::endl;
+				out<<" loading successful.";
+				out<<"\n";
+				std::cout << out.str();
 			}			
 		}else{
-				std::cout<<"sccan_point_analysis -> ";
-				std::cout<<"fill_sccan_matrix() -> ";
-				std::cout<<"sccan point "<<(sccan_point_itterator+1);
-				std::cout<<"/"<<	
+				std::stringstream out;
+				out<<"sccan_point_analysis -> ";
+				out<<"fill_sccan_matrix() -> ";
+				out<<"sccan point "<<(sccan_point_itterator+1);
+				out<<"/"<<	
 				pointer_to_sccan_point_pair_handler->
 				get_number_of_sccan_points_in_current_directory();
-				std::cout<<" loading failed.";
-				std::cout<<std::endl;			
+				out<<" loading failed.";
+				out<<"\n";
+				std::cout<<out.str();			
 		}
 		//==============================================================
 		// check whether a single star was found or not 
@@ -89,18 +93,20 @@ fill_sccan_matrix(){
 			mirror_itterator++)
 			{
 				if(sccan_point_analysis_verbosity){
-					std::cout<<"_____________________________________"<<std::endl;
-					std::cout<<"sccan_point_analysis -> ";
-					std::cout<<"fill_sccan_matrix() -> ";
-					std::cout<<"sccan point "<<(sccan_point_itterator+1);
-					std::cout<<"/"<<	
+					std::stringstream out;
+					out<<"_____________________________________"<<std::endl;
+					out<<"sccan_point_analysis -> ";
+					out<<"fill_sccan_matrix() -> ";
+					out<<"sccan point "<<(sccan_point_itterator+1);
+					out<<"/"<<	
 					pointer_to_sccan_point_pair_handler->
 					get_number_of_sccan_points_in_current_directory();
-					std::cout<<" mirror "<<(mirror_itterator+1);
-					std::cout<<"/"<<	
+					out<<" mirror "<<(mirror_itterator+1);
+					out<<"/"<<	
 					pointer_to_reflector->
 					get_number_of_mirrors_on_reflector();
-					std::cout<<std::endl;
+					out<<"\n";
+					std::cout<<out.str();
 				}
 				
 				sccan_analysis_point* 
@@ -126,14 +132,16 @@ fill_sccan_matrix(){
 		}else{
 			// no single star in sccan point
 			if(sccan_point_analysis_verbosity){
-				std::cout<<"sccan_point_analysis -> ";
-				std::cout<<"fill_sccan_matrix() -> ";
-				std::cout<<"sccan point "<<(sccan_point_itterator+1);
-				std::cout<<"/"<<	
+				std::stringstream out;
+				out<<"sccan_point_analysis -> ";
+				out<<"fill_sccan_matrix() -> ";
+				out<<"sccan point "<<(sccan_point_itterator+1);
+				out<<"/"<<	
 				pointer_to_sccan_point_pair_handler->
 				get_number_of_sccan_points_in_current_directory();
-				std::cout<<" no single star found!"<<std::endl;
-				std::cout<<std::endl;
+				out<<" no single star found!"<<std::endl;
+				out<<"\n";
+				std::cout<<out.str();
 			}			
 		}
 	}
@@ -655,15 +663,17 @@ run_anaysis(){
 	for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
 		
 		if(true){
-			std::cout << "sccan_point_analysis -> ";
-			std::cout << "analyse() -> ";
-			std::cout << "instructions for Mirror ";
-			std::cout << "[sccan_matrix/reflector list]ID  ";
-			std::cout << sccan_matrix.at(0).at(MIit)->get_mirror_ID();
-			std::cout << "/";
-			std::cout << pointer_to_reflector -> 
+			std::stringstream out;
+			out << "sccan_point_analysis -> ";
+			out << "analyse() -> ";
+			out << "instructions for Mirror ";
+			out << "[sccan_matrix/reflector list]ID  ";
+			out << sccan_matrix.at(0).at(MIit)->get_mirror_ID();
+			out << "/";
+			out << pointer_to_reflector -> 
 			list_of_pointers_to_mirrors.at(MIit) -> get_mirror_ID();
-			std::cout << std::endl;
+			out << "\n";
+			std::cout << out.str();
 		}
 		
 		// draw controll plots

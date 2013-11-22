@@ -32,7 +32,10 @@ public:
 	uint 		mirror_ID;
 	
 	// mirror mount orientation
+	private:
 	double tripod_orientation_z_in_rad;
+	public:
+	
 	double tripod_radius_in_m;
 	double pitch_of_bolt_in_m_per_revolution;
 	
@@ -61,7 +64,7 @@ public:
 	
 	// configuration file
 	std::string key_ID;
-	std::string key_tripod_orientation_z_in_rad;
+	std::string key_tripod_orientation_z_in_deg;
 	std::string	key_list_of_points_defining_mirror_polygon;
 	std::string	key_polygon_point_pixel_coordinate_x;
 	std::string	key_polygon_point_pixel_coordinate_y;	
@@ -90,6 +93,8 @@ void create_polygon_mask(cv::Size image_size_of_reflector_camera);
 void create_list_of_Points_inside_mirror_polygon();
 //======================================================================
 void draw_mirror_polygon(sccan_image *image_to_draw_poygons_in,bool highlight);
+//======================================================================
+void draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight);
 //======================================================================
 list_of_pixel_positions* get_pointer_to_list_of_Points_inside_mirror_polygon();
 //======================================================================

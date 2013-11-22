@@ -27,9 +27,12 @@ private:
 	// reflector calibration sccan_image
 	std::string		name_of_calibration_image;
 	sccan_image		reflector_calibration_image;
+	
 	bool 			flag_calibration_image_with_polygons_created;
 	sccan_image		reflector_calibration_image_with_polygons;
 	std::string		name_of_calibration_window_with_highlighted_poygons;
+	
+	bool 			show_tripods;
 	
 	// reflector configuration text file
 	std::string		file_name_extension_for_configuration_file;
