@@ -392,7 +392,8 @@ double simple_image::calculate_variance
 	return variance;
 }
 //======================================================================
-list_of_pixel_positions simple_image::create_list_of_Points_of_non_zero_pixels(){
+list_of_pixel_positions simple_image::
+create_list_of_Points_of_non_zero_pixels(){
 	
 	list_of_pixel_positions list_of_Points_of_non_zero_pixels;
 	
@@ -432,7 +433,8 @@ list_of_pixel_positions simple_image::create_list_of_Points_of_non_zero_pixels()
 	return list_of_Points_of_non_zero_pixels;
 }
 //======================================================================
-void simple_image::get_brightest_pixel_of_image
+void simple_image::
+get_brightest_pixel_of_image
 (cv::Point *maximal_pixel_location,double *maximal_pixel_value){
 
 	double minimal_pixel_value;
@@ -467,7 +469,8 @@ void simple_image::get_brightest_pixel_of_image
 	}
 }
 //======================================================================
-void simple_image::get_relative_min_and_max_pixel_value(
+void simple_image::
+get_relative_min_and_max_pixel_value(
 double *min_relative_pixel_value,double *max_relative_pixel_value){
 	
 
@@ -507,7 +510,8 @@ double *min_relative_pixel_value,double *max_relative_pixel_value){
 	*max_relative_pixel_value = *max_relative_pixel_value/255.0;
 }
 //======================================================================
-simple_image simple_image::get_overlay_with_stars(std::vector<star_in_image> list_of_stars,
+simple_image simple_image::
+get_overlay_with_stars(std::vector<star_in_image> list_of_stars,
 cv::Scalar color_of_ring){
 	
 	list_of_pixel_positions list_of_star_positions;
@@ -523,7 +527,8 @@ cv::Scalar color_of_ring){
 	
 }
 //======================================================================
-simple_image simple_image::get_overlay_with_stars
+simple_image simple_image::
+get_overlay_with_stars
 (list_of_pixel_positions list_of_star_positions,cv::Scalar color_of_ring){
 	
 	simple_image image_with_star_overlay;
@@ -593,7 +598,8 @@ simple_image simple_image::get_overlay_with_stars
 	return image_with_star_overlay;	
 }
 //======================================================================
-simple_image simple_image::get_resized_image
+simple_image simple_image::
+get_resized_image
 (int height_of_alignment_image,double* scaling_factor_for_image){
 	
 	if(verbosity){
@@ -633,7 +639,8 @@ simple_image simple_image::get_resized_image
 	return resized_image;
 }
 //======================================================================
-std::vector<list_of_pixel_positions> simple_image::spatial_clustering_of_threshold_mask(){
+std::vector<list_of_pixel_positions> simple_image::
+spatial_clustering_of_threshold_mask(){
 	
 	bool show_controll_images = false;
 	

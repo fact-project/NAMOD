@@ -14,6 +14,13 @@ cv::Point list_of_pixel_positions::get_mean_of_pixel_distribution(){
 		std::cout<<std::endl;
 	}
 	
+	if(size()==0){
+		cv::Point default_point;
+		default_point.x = 0;
+		default_point.y = 0;
+		return default_point;
+	}
+	
 	cv::Point mean;
 	for(
 	int point_itterator=0;
