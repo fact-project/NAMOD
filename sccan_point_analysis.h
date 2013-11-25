@@ -47,7 +47,7 @@ const sccan_analysis_point *a, const sccan_analysis_point *b){
 
 //======================================================================
 class sccan_point_analysis 		:public user_interaction{
-	public:
+private:
 	bool 	sccan_point_analysis_verbosity;
 	
 	std::vector< std::vector<sccan_analysis_point*> > sccan_matrix;
@@ -60,6 +60,9 @@ class sccan_point_analysis 		:public user_interaction{
 	sccan_point_pair_handler* pointer_to_sccan_point_pair_handler;
 	reflector				* pointer_to_reflector;
 	
+	// multi thread
+	bool use_multithread;
+public:	
 //======================================================================
 sccan_point_analysis(
 sccan_point_pair_handler* new_pointer_to_sccan_point_pair_handler,
@@ -91,5 +94,12 @@ uint get_number_of_mirrors();
 uint get_number_of_sccan_points();
 //======================================================================
 void run_anaysis();
+private:
+//======================================================================
+void analyse_single_mirror_and_get_instructions(
+uint MIit, std::stringstream *instruction_table);
+//======================================================================
+void fill_sccan_point(int sccan_point_itterator);
+//======================================================================
 };
 #endif // __SCAAN_POINT_ANALYSIS_H_INCLUDED__

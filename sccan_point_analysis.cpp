@@ -20,9 +20,10 @@ reflector* new_pointer_to_reflector){
 	
 	normalize_mirror_response = true;
 	
-	pointer_to_reflector = new_pointer_to_reflector;
+	use_multithread = true;
 	
-	//pointer_to_star_camera = new_pointer_to_star_camera;
+	pointer_to_reflector = new_pointer_to_reflector;
+
 }	
 //======================================================================
 void sccan_point_analysis::
@@ -33,117 +34,235 @@ fill_sccan_matrix(){
 	// update sccan point list of current directory
 	pointer_to_sccan_point_pair_handler->
 	update_list_of_runs_in_current_directory();
-
-	int sccan_point_itterator;
-	#pragma omp parallel private(sccan_point_itterator) 
-	
 	//for all sccan points
-	#pragma omp for schedule(dynamic) 	
-	for(int sccan_point_itterator = 0;
-	sccan_point_itterator<
-	pointer_to_sccan_point_pair_handler->
-	get_number_of_sccan_points_in_current_directory();
-	sccan_point_itterator++)
-	{
-		sccan_point_pair current_sccan_point
-		(0,sccan_point_analysis_verbosity);
-		
-		if(current_sccan_point.load_sccan_point_pair(
+	
+	int sccan_point_itterator;
+	
+	if(use_multithread){
+	
+		#pragma omp parallel private(sccan_point_itterator) 
+		#pragma omp for schedule(dynamic) 	
+		for(int sccan_point_itterator = 0;
+		sccan_point_itterator<
 		pointer_to_sccan_point_pair_handler->
-		get_sccan_point_pair_name_at(sccan_point_itterator)
-		)){
-			if(sccan_point_analysis_verbosity){
-				std::stringstream out;
-				out<<"sccan_point_analysis -> ";
-				out<<"fill_sccan_matrix() -> ";
-				out<<"sccan point "<<(sccan_point_itterator+1);
-				out<<"/"<<	
-				pointer_to_sccan_point_pair_handler->
-				get_number_of_sccan_points_in_current_directory();
-				out<<" loading successful.";
-				out<<"\n";
-				std::cout << out.str();
-			}			
-		}else{
-				std::stringstream out;
-				out<<"sccan_point_analysis -> ";
-				out<<"fill_sccan_matrix() -> ";
-				out<<"sccan point "<<(sccan_point_itterator+1);
-				out<<"/"<<	
-				pointer_to_sccan_point_pair_handler->
-				get_number_of_sccan_points_in_current_directory();
-				out<<" loading failed.";
-				out<<"\n";
-				std::cout<<out.str();			
-		}
-		//==============================================================
-		// check whether a single star was found or not 
-		//==============================================================
-		if(current_sccan_point.a_single_star_has_been_found()){ 
-			// a single star in sccan point
+		get_number_of_sccan_points_in_current_directory();
+		sccan_point_itterator++)
+		{
+			fill_sccan_point(sccan_point_itterator);
+			/*
+			sccan_point_pair current_sccan_point
+			(0,sccan_point_analysis_verbosity);
 			
-			std::vector<sccan_analysis_point*> 
-			list_of_sccan_analysis_points_for_specific_sccan_point;
-			//==========================================================
-			//for all mirrors on reflector
-			//==========================================================
-			for(int mirror_itterator = 0;
-			mirror_itterator<
-			pointer_to_reflector->get_number_of_mirrors_on_reflector();
-			mirror_itterator++)
-			{
+			if(current_sccan_point.load_sccan_point_pair(
+			pointer_to_sccan_point_pair_handler->
+			get_sccan_point_pair_name_at(sccan_point_itterator)
+			)){
 				if(sccan_point_analysis_verbosity){
 					std::stringstream out;
-					out<<"_____________________________________"<<std::endl;
 					out<<"sccan_point_analysis -> ";
 					out<<"fill_sccan_matrix() -> ";
 					out<<"sccan point "<<(sccan_point_itterator+1);
 					out<<"/"<<	
 					pointer_to_sccan_point_pair_handler->
 					get_number_of_sccan_points_in_current_directory();
-					out<<" mirror "<<(mirror_itterator+1);
-					out<<"/"<<	
-					pointer_to_reflector->
-					get_number_of_mirrors_on_reflector();
+					out<<" loading successful.";
 					out<<"\n";
-					std::cout<<out.str();
+					std::cout << out.str();
+				}			
+			}else{
+					std::stringstream out;
+					out<<"sccan_point_analysis -> ";
+					out<<"fill_sccan_matrix() -> ";
+					out<<"sccan point "<<(sccan_point_itterator+1);
+					out<<"/"<<	
+					pointer_to_sccan_point_pair_handler->
+					get_number_of_sccan_points_in_current_directory();
+					out<<" loading failed.";
+					out<<"\n";
+					std::cout<<out.str();			
+			}
+			//==============================================================
+			// check whether a single star was found or not 
+			//==============================================================
+			if(current_sccan_point.a_single_star_has_been_found()){ 
+				// a single star in sccan point
+				
+				std::vector<sccan_analysis_point*> 
+				list_of_sccan_analysis_points_for_specific_sccan_point;
+				//==========================================================
+				//for all mirrors on reflector
+				//==========================================================
+				for(int mirror_itterator = 0;
+				mirror_itterator<
+				pointer_to_reflector->get_number_of_mirrors_on_reflector();
+				mirror_itterator++)
+				{
+					if(sccan_point_analysis_verbosity){
+						std::stringstream out;
+						out<<"_____________________________________"<<std::endl;
+						out<<"sccan_point_analysis -> ";
+						out<<"fill_sccan_matrix() -> ";
+						out<<"sccan point "<<(sccan_point_itterator+1);
+						out<<"/"<<	
+						pointer_to_sccan_point_pair_handler->
+						get_number_of_sccan_points_in_current_directory();
+						out<<" mirror "<<(mirror_itterator+1);
+						out<<"/"<<	
+						pointer_to_reflector->
+						get_number_of_mirrors_on_reflector();
+						out<<"\n";
+						std::cout<<out.str();
+					}
+					
+					sccan_analysis_point* 
+					pointer_to_specific_sccan_analysis_point = 
+					current_sccan_point.calculate_sccan_analysis_point(
+					pointer_to_reflector->
+					get_pointer_to_list_of_Points_inside_mirror_polygon
+					(mirror_itterator),
+					pointer_to_reflector->list_of_pointers_to_mirrors.
+					at(mirror_itterator)->get_mirror_ID()
+					);
+					
+					pointer_to_specific_sccan_analysis_point->
+					toggle_verbosity(sccan_point_analysis_verbosity);
+					
+					list_of_sccan_analysis_points_for_specific_sccan_point.
+					push_back(pointer_to_specific_sccan_analysis_point);
 				}
 				
-				sccan_analysis_point* 
-				pointer_to_specific_sccan_analysis_point = 
-				current_sccan_point.calculate_sccan_analysis_point(
-				pointer_to_reflector->
-				get_pointer_to_list_of_Points_inside_mirror_polygon
-				(mirror_itterator),
-				pointer_to_reflector->list_of_pointers_to_mirrors.
-				at(mirror_itterator)->get_mirror_ID()
-				);
+				sccan_matrix.push_back
+				(list_of_sccan_analysis_points_for_specific_sccan_point);
 				
-				pointer_to_specific_sccan_analysis_point->
-				toggle_verbosity(sccan_point_analysis_verbosity);
-				
-				list_of_sccan_analysis_points_for_specific_sccan_point.
-				push_back(pointer_to_specific_sccan_analysis_point);
-			}
-			
-			sccan_matrix.push_back
-			(list_of_sccan_analysis_points_for_specific_sccan_point);
-			
-		}else{
-			// no single star in sccan point
+			}else{
+				// no single star in sccan point
+				if(sccan_point_analysis_verbosity){
+					std::stringstream out;
+					out<<"sccan_point_analysis -> ";
+					out<<"fill_sccan_matrix() -> ";
+					out<<"sccan point "<<(sccan_point_itterator+1);
+					out<<"/"<<	
+					pointer_to_sccan_point_pair_handler->
+					get_number_of_sccan_points_in_current_directory();
+					out<<" no single star found!"<<std::endl;
+					out<<"\n";
+					std::cout<<out.str();
+				}			
+			}*/
+		}
+	}else{
+		for(int sccan_point_itterator = 0;
+		sccan_point_itterator<
+		pointer_to_sccan_point_pair_handler->
+		get_number_of_sccan_points_in_current_directory();
+		sccan_point_itterator++)
+		{
+			fill_sccan_point(sccan_point_itterator);
+		}	
+	}
+}
+//======================================================================
+void sccan_point_analysis::
+fill_sccan_point(int sccan_point_itterator){
+		
+	sccan_point_pair current_sccan_point
+	(0,sccan_point_analysis_verbosity);
+	
+	if(current_sccan_point.load_sccan_point_pair(
+	pointer_to_sccan_point_pair_handler->
+	get_sccan_point_pair_name_at(sccan_point_itterator)
+	)){
+		if(sccan_point_analysis_verbosity){
+			std::stringstream out;
+			out<<"sccan_point_analysis -> ";
+			out<<"fill_sccan_matrix() -> fill_sccan_point() -> ";
+			out<<"sccan point "<<(sccan_point_itterator+1);
+			out<<"/"<<	
+			pointer_to_sccan_point_pair_handler->
+			get_number_of_sccan_points_in_current_directory();
+			out<<" loading successful.";
+			out<<"\n";
+			std::cout << out.str();
+		}			
+	}else{
+		std::stringstream out;
+		out<<"sccan_point_analysis -> ";
+		out<<"fill_sccan_matrix() -> fill_sccan_point() -> ";
+		out<<"sccan point "<<(sccan_point_itterator+1);
+		out<<"/"<<	
+		pointer_to_sccan_point_pair_handler->
+		get_number_of_sccan_points_in_current_directory();
+		out<<" loading failed.";
+		out<<"\n";
+		std::cout<<out.str();			
+	}
+	//==============================================================
+	// check whether a single star was found or not 
+	//==============================================================
+	if(current_sccan_point.a_single_star_has_been_found()){ 
+		// a single star in sccan point
+		
+		std::vector<sccan_analysis_point*> 
+		list_of_sccan_analysis_points_for_specific_sccan_point;
+		//==========================================================
+		//for all mirrors on reflector
+		//==========================================================
+		for(int mirror_itterator = 0;
+		mirror_itterator<
+		pointer_to_reflector->get_number_of_mirrors_on_reflector();
+		mirror_itterator++)
+		{
 			if(sccan_point_analysis_verbosity){
 				std::stringstream out;
+				out<<"_____________________________________"<<std::endl;
 				out<<"sccan_point_analysis -> ";
-				out<<"fill_sccan_matrix() -> ";
+				out<<"fill_sccan_matrix() -> fill_sccan_point() -> ";
 				out<<"sccan point "<<(sccan_point_itterator+1);
 				out<<"/"<<	
 				pointer_to_sccan_point_pair_handler->
 				get_number_of_sccan_points_in_current_directory();
-				out<<" no single star found!"<<std::endl;
+				out<<" mirror "<<(mirror_itterator+1);
+				out<<"/"<<	
+				pointer_to_reflector->
+				get_number_of_mirrors_on_reflector();
 				out<<"\n";
 				std::cout<<out.str();
-			}			
+			}
+			
+			sccan_analysis_point* 
+			pointer_to_specific_sccan_analysis_point = 
+			current_sccan_point.calculate_sccan_analysis_point(
+			pointer_to_reflector->
+			get_pointer_to_list_of_Points_inside_mirror_polygon
+			(mirror_itterator),
+			pointer_to_reflector->list_of_pointers_to_mirrors.
+			at(mirror_itterator)->get_mirror_ID()
+			);
+			
+			pointer_to_specific_sccan_analysis_point->
+			toggle_verbosity(sccan_point_analysis_verbosity);
+			
+			list_of_sccan_analysis_points_for_specific_sccan_point.
+			push_back(pointer_to_specific_sccan_analysis_point);
 		}
+		
+		sccan_matrix.push_back
+		(list_of_sccan_analysis_points_for_specific_sccan_point);
+		
+	}else{
+		// no single star in sccan point
+		if(sccan_point_analysis_verbosity){
+			std::stringstream out;
+			out<<"sccan_point_analysis -> ";
+			out<<"fill_sccan_matrix() -> fill_sccan_point() -> ";
+			out<<"sccan point "<<(sccan_point_itterator+1);
+			out<<"/"<<	
+			pointer_to_sccan_point_pair_handler->
+			get_number_of_sccan_points_in_current_directory();
+			out<<" no single star found!"<<std::endl;
+			out<<"\n";
+			std::cout<<out.str();
+		}			
 	}
 }
 //======================================================================
@@ -234,6 +353,16 @@ get_analysis_prompt(){
 	}
 	out<<make_nice_line_with_dots
 	("| toggle mirror response normalizing: ",info.str());	
+
+	// multithreading
+	info.str("");
+	if(use_multithread){
+		info<<"TRUE";
+	}else{
+		info<<"FALSE";
+	}
+	out<<make_nice_line_with_dots
+	("| multithreading ",info.str());	
 	
 	// horizontal line 
 	out<<"|";
@@ -246,12 +375,10 @@ void sccan_point_analysis::
 interaction(){
 	
 	std::string key_fill_sccan_point_matrix  ="f";
-	add_control(key_fill_sccan_point_matrix,
-	"fill sccan point matrix");
+	add_control(key_fill_sccan_point_matrix,"fill sccan point matrix");
 
 	std::string key_show_sccan_point_matrix  ="s";
-	add_control(key_show_sccan_point_matrix,
-	"show sccan point matrix");	
+	add_control(key_show_sccan_point_matrix,"show sccan point matrix");	
 
 	std::string key_analyse_sccan_point_matrix  ="a";
 	add_control(key_analyse_sccan_point_matrix,
@@ -264,10 +391,12 @@ interaction(){
 	std::string key_draw_all_mirror_response_maps  ="draw";
 	add_control(key_draw_all_mirror_response_maps,
 	"draw all mirror response maps");
+
+	std::string key_toggle_multithread  ="m";
+	add_control(key_toggle_multithread,"toggle multithread");	
 	
 	std::string key_user_wants_to_end_analysis  ="back";
-	add_control(key_user_wants_to_end_analysis,
-	"back to main menu");
+	add_control(key_user_wants_to_end_analysis,"back to main menu");
 	
 	std::string user_input;
 	std::stringstream out;
@@ -318,6 +447,10 @@ interaction(){
 	//==================================================================
 	if(valid_user_input.compare(key_toggle_light_flux_normalizing)==0){
 		normalize_mirror_response = ! normalize_mirror_response;	
+	}
+	//==================================================================
+	if(valid_user_input.compare(key_toggle_multithread)==0){
+		use_multithread = ! use_multithread;	
 	}
 	//==================================================================
 }while(flag_user_wants_to_analyse);
@@ -656,37 +789,50 @@ run_anaysis(){
 	
 	std::stringstream instruction_table;
 	
-	uint MIit;
-	#pragma omp parallel shared(instruction_table) private(MIit) 
 	
-	#pragma omp for schedule(dynamic) 
-	for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
+	
+	uint MIit;
+	
+	if(use_multithread){
+		#pragma omp parallel shared(instruction_table) private(MIit) 
+		#pragma omp for schedule(dynamic) 
+		for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
 		
-		if(true){
-			std::stringstream out;
-			out << "sccan_point_analysis -> ";
-			out << "analyse() -> ";
-			out << "instructions for Mirror ";
-			out << "[sccan_matrix/reflector list]ID  ";
-			out << sccan_matrix.at(0).at(MIit)->get_mirror_ID();
-			out << "/";
-			out << pointer_to_reflector -> 
-			list_of_pointers_to_mirrors.at(MIit) -> get_mirror_ID();
-			out << "\n";
-			std::cout << out.str();
-		}
-		
-		// draw controll plots
-		draw_mirror_response(MIit);
-		
-		// get instructions
-		instruction_table << 
-		pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
-		get_manipulation_instructions(
-		
-		PointingDirectionOfStarAtMaxMirrorResponse(MIit)
+			analyse_single_mirror_and_get_instructions
+			(MIit,&instruction_table);
+		/*	
+			if(true){
+				std::stringstream out;
+				out << "sccan_point_analysis -> ";
+				out << "analyse() -> ";
+				out << "instructions for Mirror ";
+				out << "[sccan_matrix/reflector list]ID  ";
+				out << sccan_matrix.at(0).at(MIit)->get_mirror_ID();
+				out << "/";
+				out << pointer_to_reflector -> 
+				list_of_pointers_to_mirrors.at(MIit) -> get_mirror_ID();
+				out << "\n";
+				std::cout << out.str();
+			}
 			
-		);	
+			// draw controll plots
+			draw_mirror_response(MIit);
+			
+			// get instructions
+			instruction_table << 
+			pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
+			get_manipulation_instructions(
+			
+			PointingDirectionOfStarAtMaxMirrorResponse(MIit)
+				
+			);	
+		*/
+		}
+	}else{
+		for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
+			analyse_single_mirror_and_get_instructions
+			(MIit,&instruction_table);
+		}	
 	}
 
 	std::cout << instruction_table.str();
@@ -705,7 +851,37 @@ run_anaysis(){
 	);
 }	
 //======================================================================
-
+void sccan_point_analysis::
+analyse_single_mirror_and_get_instructions(
+uint MIit, std::stringstream *instruction_table){
+	
+	if(true){
+		std::stringstream out;
+		out << "sccan_point_analysis -> ";
+		out << "analyse() -> ";
+		out << "instructions for Mirror ";
+		out << "[sccan_matrix/reflector list]ID  ";
+		out << sccan_matrix.at(0).at(MIit)->get_mirror_ID();
+		out << "/";
+		out << pointer_to_reflector -> 
+		list_of_pointers_to_mirrors.at(MIit) -> get_mirror_ID();
+		out << "\n";
+		std::cout << out.str();
+	}
+	
+	// draw controll plots
+	draw_mirror_response(MIit);
+	
+	// get instructions
+	*instruction_table << 
+	pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
+	get_manipulation_instructions(
+	
+	PointingDirectionOfStarAtMaxMirrorResponse(MIit)
+		
+	);
+	
+}
 
 
 

@@ -655,6 +655,12 @@ sccan_image *image_to_draw_poygons_in,bool highlight){
 		get_mirror_ID())
 		highlight_specific_mirror = true;
 		
+		list_of_pointers_to_mirrors.
+		at(mirror_itterator)->
+		draw_mirror_polygon(
+		image_to_draw_poygons_in,
+		highlight_specific_mirror);	
+			
 		if(show_tripods){
 			list_of_pointers_to_mirrors.
 			at(mirror_itterator)->
@@ -662,13 +668,6 @@ sccan_image *image_to_draw_poygons_in,bool highlight){
 			image_to_draw_poygons_in,
 			highlight_specific_mirror);		
 		}
-		
-		list_of_pointers_to_mirrors.
-		at(mirror_itterator)->
-		draw_mirror_polygon(
-		image_to_draw_poygons_in,
-		highlight_specific_mirror);
-				
 	}
 	flag_calibration_image_with_polygons_created = true;
 	
@@ -1251,7 +1250,7 @@ void reflector::add_point_to_polygon_point_list_of_mirror(int pixel_x, int pixel
 	point_to_add.y = pixel_y;
 	
 	pointer_to_current_mirror_to_work_with->
-	list_of_points_defining_mirror_polygon.push_back(point_to_add);
+	add_point_to_mirror_polygon(point_to_add);
 	
 	// update sccan_image
 	update_calibration_image_with_polygons(true);
@@ -1272,11 +1271,11 @@ void reflector::add_point_to_polygon_point_list_of_mirror(int pixel_x, int pixel
 void reflector::pop_point_of_polygon_point_list_of_mirror(){
 		
 	if(	pointer_to_current_mirror_to_work_with->
-		list_of_points_defining_mirror_polygon.size() > 0)
+	get_number_of_points_defining_mirror_polygon() > 0)
 	{
 		// delete last point
 		pointer_to_current_mirror_to_work_with->
-		list_of_points_defining_mirror_polygon.pop_back();
+		remove_last_point_of_mirror_polygon();
 		
 		// update sccan_image
 		update_calibration_image_with_polygons(true);

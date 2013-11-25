@@ -27,14 +27,12 @@
 //=================================
 // the actual class
 class mirror					:public programm_verbosity{
-public:
-	//bool 		verbosity_mirror;
+private:
+
 	uint 		mirror_ID;
 	
 	// mirror mount orientation
-	private:
 	double tripod_orientation_z_in_rad;
-	public:
 	
 	double tripod_radius_in_m;
 	double pitch_of_bolt_in_m_per_revolution;
@@ -44,6 +42,7 @@ public:
 	double manipulation_distance_of_second_tripod_leg_in_m;
 	double manipulation_distance_of_third_tripod_leg_in_m;
 
+	bool 	flag_manipulation_revolutions_have_been_calculated;
 	double manipulation_revolutions_of_first_tripod_leg_in_revs;
 	double manipulation_revolutions_of_second_tripod_leg_in_revs;
 	double manipulation_revolutions_of_third_tripod_leg_in_revs;
@@ -68,6 +67,7 @@ public:
 	std::string	key_list_of_points_defining_mirror_polygon;
 	std::string	key_polygon_point_pixel_coordinate_x;
 	std::string	key_polygon_point_pixel_coordinate_y;	
+public:
 //======================================================================
 mirror(uint new_mirror_ID,bool new_verbosity);
 //======================================================================
@@ -110,11 +110,26 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse);
 void calculate_bolt_manipulation_distances();
 //======================================================================
 void set_mirror_tripod(
-double new_tripod_radius_in_m,
-double new_pitch_of_mirror_bolt);
+double new_tripod_radius_in_m,double new_pitch_of_mirror_bolt);
 //======================================================================
 void init_tripod();
 //======================================================================
 void calculate_bolt_manipulation_revolutions();
+//======================================================================
+void add_point_to_mirror_polygon(cv::Point new_point);
+//======================================================================
+uint get_number_of_points_defining_mirror_polygon();
+//======================================================================
+void remove_last_point_of_mirror_polygon();
+private:
+//======================================================================
+void draw_mirror_instruction(
+cv::Point tripod_center,
+cv::Point tripod_leg,
+double rotation_instruction_in_revs,
+sccan_image *image_to_draw_tripod_in,
+int &text_fontFace,
+double &text_fontScale,
+int &text_thickness);
 };
 #endif // __MIRROR_H_INCLUDED__ 

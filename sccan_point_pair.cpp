@@ -501,18 +501,17 @@ double desired_max_rel_refl_cam_response,
 int		max_number_of_exposure_itterations,
 bool	*max_number_of_exposure_itterations_has_been_exceeded
 ){
-	if(pointer_to_star_camera->initialization_succesfull == FALSE){
+	if(pointer_to_star_camera->is_initialized() == FALSE){
 		std::cout<<"sccan_point_pair -> acquire_sccan_images() -> ";
 		std::cout<<"star camera is not initialized.\n";		
 		return FALSE;
 	}
 
-	if(pointer_to_reflector_camera->initialization_succesfull == FALSE){
+	if(pointer_to_reflector_camera->is_initialized() == FALSE){
 		std::cout<<"sccan_point_pair -> acquire_sccan_images() -> ";
 		std::cout<<"reflector camera is not initialized.\n";			
 		return FALSE;
 	}
-	
 	
 	bool star_image_ok;
 	bool reflector_image_ok;

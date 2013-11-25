@@ -18,6 +18,7 @@ void mirror::initialize(uint new_mirror_ID,bool new_verbosity){
 	
 	flag_misalignment_angles_have_been_calculated = false;
 	flag_manipulation_distances_have_been_calculated = false;
+	flag_manipulation_revolutions_have_been_calculated = false;
 	tripod_orientation_z_in_rad =0.0;
 	
 	// mask sccan_image
@@ -50,7 +51,6 @@ std::string mirror::get_string(){
 	out<<"| |_______________________________________________________\n";
 	out<<"|\n";
 	out<<"|  _mirror_mask_polygon___________________________________\n";
-	out<<"| |\n";
 	out<<"| | number of points: "<<list_of_points_defining_mirror_polygon.size()<<std::endl;
 	out<<"| | polygon list: ";
 	if(list_of_points_defining_mirror_polygon.size()==0){
@@ -77,7 +77,6 @@ std::string mirror::get_string(){
 	out<<"|\n";
 	out<<"|  _misalignment__________________________________________\n";
 	if(flag_misalignment_angles_have_been_calculated){
-	out<<"| | mirror misalignment: "<<std::endl;
 	out<<"| | missalignment angle in x: ";
 	out<<MirrorMisalignmentDirection.
 	get_x_tilt_prompt_in_deg_min_sec()<<std::endl;
@@ -639,8 +638,10 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	 
 	// the x coordinates in the image are flipped to orientate 
 	// x axis as in star camera frame
-	 
+	
+	//==================================================================
 	//first leg
+	//==================================================================
 	cv::Point first_leg;
 	first_leg.x = center_of_tripod.x - 
 	cos(tripod_orientation_z_in_rad)*tripod_leg_lenght_in_pixels;
@@ -662,10 +663,12 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	text_fontFace,// fontFace
 	text_fontScale,// fontScale
 	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
-	text_thickness/2.0,
-	4);
-	
+	text_thickness,
+	8);
+
+	//==================================================================	
 	//second leg
+	//==================================================================
 	cv::Point second_leg;
 	second_leg.x = center_of_tripod.x - 
 	cos(two_third_pi+tripod_orientation_z_in_rad)*
@@ -689,22 +692,24 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	text_fontFace,// fontFace
 	text_fontScale,// fontScale
 	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
-	text_thickness/2.0,
-	4);
+	text_thickness,
+	8);
 
+	//==================================================================
 	//third leg
-	cv::Point third_leg;
-	third_leg.x = center_of_tripod.x - 
+	//==================================================================
+	cv::Point third_leg_position_in_image;
+	third_leg_position_in_image.x = center_of_tripod.x - 
 	cos(2.0*two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;
-	third_leg.y = center_of_tripod.y + 
+	third_leg_position_in_image.y = center_of_tripod.y + 
 	sin(2.0*two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;	
 	
 	cv::line(
 	image_to_draw_tripod_in->image_matrix,
 	center_of_tripod,
-	third_leg,
+	third_leg_position_in_image,
 	cv::Scalar( 128, 255, 0),//Blue,Green,Red
 	line_thickness,
 	line_Type );
@@ -712,12 +717,47 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	cv::putText(
 	image_to_draw_tripod_in->image_matrix,
 	"3",
-	third_leg,
+	third_leg_position_in_image,
 	text_fontFace,// fontFace
 	text_fontScale,// fontScale
 	cv::Scalar( 0, 255, 128 ),//Blue,Green,Red
-	text_thickness/2.0,
-	4);
+	text_thickness,
+	8);
+	
+	//==================================================================
+	if(flag_manipulation_revolutions_have_been_calculated){	
+
+		draw_mirror_instruction(
+		center_of_tripod,
+		first_leg,
+		manipulation_revolutions_of_first_tripod_leg_in_revs,
+		image_to_draw_tripod_in,
+		text_fontFace,
+		text_fontScale,
+		text_thickness
+		);	
+
+		draw_mirror_instruction(
+		center_of_tripod,
+		second_leg,
+		manipulation_revolutions_of_second_tripod_leg_in_revs,
+		image_to_draw_tripod_in,
+		text_fontFace,
+		text_fontScale,
+		text_thickness
+		);	
+
+		draw_mirror_instruction(
+		center_of_tripod,
+		third_leg_position_in_image,
+		manipulation_revolutions_of_third_tripod_leg_in_revs,
+		image_to_draw_tripod_in,
+		text_fontFace,
+		text_fontScale,
+		text_thickness
+		);	
+
+	}
 	
 	//==================================================================
 		
@@ -726,6 +766,39 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 		std::cout<<"draw_mirror_tripod -> ";
 		std::cout<<"end"<<std::endl;	
 	}
+}
+//======================================================================
+void mirror::
+draw_mirror_instruction(
+cv::Point tripod_center,
+cv::Point tripod_leg,
+double rotation_instruction_in_revs,
+sccan_image *image_to_draw_tripod_in,
+int &text_fontFace,
+double &text_fontScale,
+int &text_thickness){
+	
+	std::stringstream leg_text;
+	
+	if(rotation_instruction_in_revs>=0.0){
+		leg_text<<"+";
+	}
+	leg_text<<round(rotation_instruction_in_revs*(180/M_PI))<<"deg";
+	
+	cv::Point instruction_position;
+	instruction_position.x = (tripod_center.x + tripod_leg.x)/2.0;
+	instruction_position.y = (tripod_center.y + tripod_leg.y)/2.0;
+	
+	cv::putText(
+	image_to_draw_tripod_in->image_matrix,
+	leg_text.str(),
+	instruction_position,
+	text_fontFace,// fontFace
+	text_fontScale/2.0,// fontScale
+	cv::Scalar( 0, 255, 255 ),//Blue,Green,Red
+	text_thickness/3.0,
+	8);
+	
 }
 //======================================================================
 std::string mirror::
@@ -1055,6 +1128,8 @@ calculate_bolt_manipulation_revolutions(){
 		manipulation_distance_of_third_tripod_leg_in_m/
 		pitch_of_bolt_in_m_per_revolution;	
 
+		flag_manipulation_revolutions_have_been_calculated = true;
+
 		if(verbosity){
 			std::cout<<"mirror -> ";
 			std::cout<<"calculate_bolt_manipulation_revolutions() -> ";
@@ -1072,4 +1147,38 @@ calculate_bolt_manipulation_revolutions(){
 		std::cout<<"manipulation distances have been calculated\n";		
 	}
 }
-
+//======================================================================
+void mirror::add_point_to_mirror_polygon(cv::Point new_point){
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"add_point_to_mirror_polygon() -> ";
+		std::cout<<"x: "<<new_point.x<<", y: "<<new_point.y<<" [px]\n";
+	}	
+	
+	list_of_points_defining_mirror_polygon.push_back(new_point);
+	
+}
+//======================================================================
+uint mirror::get_number_of_points_defining_mirror_polygon(){
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"get_number_of_points_defining_polygon -> ";
+		std::cout<<list_of_points_defining_mirror_polygon.size();
+		std::cout<<" points on this mirror polygon.\n";
+	}
+		
+	return uint(list_of_points_defining_mirror_polygon.size());
+}
+//======================================================================
+void mirror::remove_last_point_of_mirror_polygon(){
+	if(verbosity){
+		std::cout<<"mirror -> ";
+		std::cout<<"remove_last_point_of_mirror_polygon -> ";
+		std::cout<<"remove point ";
+		std::cout<<"x: "<<list_of_points_defining_mirror_polygon.back().x;
+		std::cout<<", y: "<<list_of_points_defining_mirror_polygon.back().y;
+		std::cout<<" [px]\n";
+	}
+		
+	list_of_points_defining_mirror_polygon.pop_back();
+}

@@ -22,7 +22,7 @@
 
 //=================================
 class ueye_camera 				:public programm_verbosity{
-public:
+private:
 	sccan_image latest_image;
 	HIDS 		ueye_camera_handle;
 	CAMINFO 	ueye_camera_info;
@@ -45,9 +45,10 @@ public:
 	bool 		initialization_succesfull;
 	bool 		flag_long_time_exposure;
 	std::stringstream out;
-	
+
 	//intrinsic_camera_parameter
 	intrinsic_camera_parameter intrinsic;
+public:
 //======================================================================
 ueye_camera(int camera_ID_to_initialize,
 intrinsic_camera_parameter new_intrinsic);
