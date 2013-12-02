@@ -32,6 +32,19 @@
 #include "verbosity_handler.h"
 #include "main_menu.h"
 
+/*@ open CV  
+\begin{figure}[H]
+ \begin{center}
+  \includegraphics[width=0.1\textwidth]{figures/opencv_logo.png}
+  %\caption[1]
+  % {
+	%	openCV logo
+   %}
+  % \label{f:Abb.1}
+ \end{center}
+\end{figure}
+@*/
+
 //======================================================================
 int main(){
 	int system_call_return_value;

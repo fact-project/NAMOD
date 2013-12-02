@@ -13,10 +13,23 @@
 #include "sccan_image.h"
 #include <cmath>
 //======================================================================
-// UEYE camera by IDS imaging
-// http://www.ids-imaging.de
-// Manual:
-// http://www.ids-imaging.de/frontend/files/uEyeManuals/Manual_ger/uEye_Handbuch/index.html
+/*@ 
+\begin{figure}[H]
+ \begin{center}
+  \includegraphics[width=0.1\textwidth]{figures/ids_logo.png}
+  %\caption[1]
+  % {
+	%	IDS logo
+   %}
+  % \label{f:Abb.1}
+ \end{center}
+\end{figure}
+
+UEYE camera by IDS imaging.\\
+%http://www.ids-imaging.de\\
+Manual:\\
+%http://www.ids-imaging.de/frontend/files/uEyeManuals/Manual_ger/uEye_Handbuch/index.html
+@*/
 #include <ueye.h>
 //======================================================================
 
