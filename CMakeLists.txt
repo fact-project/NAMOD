@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 2.8)
 #=======================================================================
 # compiler flags
-set (CMAKE_CXX_FLAGS "-std=gnu++11  -O3") #-Wall
+set (CMAKE_CXX_FLAGS "-std=gnu++11 -Wall -O3") #
 #=======================================================================
 project( dual_camera )
 include_directories(/usr/include)

@@ -282,7 +282,7 @@ bool ueye_camera::initialize(){
 					IS_GET_DEFAULT_FRAMERATE,
 					&ueye_current_framerate_in_fps);
 	
-	if (return_of_PixelClock == IS_SUCCESS)
+	if (return_of_SetFrameRate == IS_SUCCESS)
 	{
 		if(verbosity){
 			out.str("");
@@ -331,7 +331,8 @@ bool ueye_camera::initialize(){
 	latest_image.initialize_image_matrix(
 	ueye_camera_sensor_number_of_pixels_in_hight,
 	ueye_camera_sensor_number_of_pixels_in_width);
-
+	
+	return true;
 }
 //======================================================================
 bool ueye_camera::acquire_image(
@@ -1106,7 +1107,7 @@ bool ueye_camera::long_time_exposure(bool long_time_exposure){
 }
 //======================================================================
 void ueye_camera::display_camera_information(){
-	int sys_return = system("clear");
+	system("clear");
 	std::stringstream out;
 	out<<" ueye_camera_ID_"<<ueye_camera_id;
 	out<<"____________________________________"<<std::endl;

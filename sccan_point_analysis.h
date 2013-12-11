@@ -55,6 +55,7 @@ private:
 	// dimension 2 mirrors
 	
 	bool normalize_mirror_response;
+	bool max_only_instead_of_CoG;
 	
 	//input
 	sccan_point_pair_handler* pointer_to_sccan_point_pair_handler;
@@ -85,6 +86,9 @@ void display_sccan_matrix_prompt();
 std::string get_analysis_prompt();
 //======================================================================
 pointing_direction PointingDirectionOfStarAtMaxMirrorResponse(
+uint mirror_iterator);
+//======================================================================
+pointing_direction CentreOfGravityPointingDirectionOfMirrorResponse(
 uint mirror_iterator);
 //======================================================================
 void draw_mirror_response(uint mirror_iterator);

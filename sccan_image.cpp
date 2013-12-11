@@ -177,7 +177,7 @@ bool sccan_image::load_image(std::string name_of_image_to_load){
 	load_intrinsic_camera_parameters(
 	name_of_image_to_load);
 	
-	if(image_found && image_info_found){
+	if(image_found && image_info_found && intrinsic_parameters_found){
 		if(verbosity){
 			std::cout<<"sccan_image -> load_image() loading successful.";
 			std::cout<<std::endl;
@@ -560,7 +560,7 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees){
 	
 
 	list_of_pixel_positions list_of_star_locations_in_pixels;
-	for(int cluster_itterator=0;
+	for(uint cluster_itterator=0;
 	cluster_itterator<list_of_clusters.size();
 	cluster_itterator++
 	){
@@ -649,67 +649,6 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees){
 		std::cout<<"||====================  END  ==================||"<<std::endl;
 	}
 	return list_of_stars_in_image;
-	
-	/*
-	if(list_of_clusters.size() == 1){
-		//one star was found
-	
-		
-		cv::Point star_position_in_pixels;
-		
-		// relative light flux
-		double light_flux_of_star_in_pixel_values;
-		star_minus_median.get_brightest_pixel_of_image(
-		&star_position_in_pixels,
-		&light_flux_of_star_in_pixel_values
-		);
-		
-		double light_flux_of_star_in_pixel_values_per_milli_second = 
-		light_flux_of_star_in_pixel_values/exposure_time_in_ms;
-		/*
-		// absolute light flux
-		double absolute_light_flux_in_standard_bulbs = 
-		star_camera_intrinsic_parameter.
-		calculate_absolute_light_flux(
-		star_image.get_exposure_time_in_ms(),
-		light_flux_of_star_in_pixel_values/255
-		);
-		*/
-		/*
-		if(verbosity){
-			std::cout<<"sccan_image -> ";			
-			std::cout<<"find_bright_star_in_star_image() -> ";
-			std::cout<<" found one single star brighter than ";
-			std::cout<<threshold_in_sigmas<<" sigma at ";
-			std::cout<<"("<<star_position_in_pixels.x;
-			std::cout<<"|"<<star_position_in_pixels.y<<")px";
-			std::cout<<" cluster size "<<list_of_clusters.at(0).size();
-			std::cout<<"pixels, flux ";
-			std::cout<<light_flux_of_star_in_pixel_values_per_milli_second;
-			std::cout<<"pxv/ms";
-			std::cout<<std::endl;
-			//list_of_clusters.at(0).disp();
-		}
-		
-	}else if(list_of_clusters.size() == 0){
-		//no star at all
-		if(verbosity){
-			std::cout<<"sccan_image -> ";
-			std::cout<<"find_bright_star_in_star_image() -> ";
-			std::cout<<" found no star at all brighter than ";
-			std::cout<<threshold_in_sigmas<<" sigma."<<std::endl;
-		}
-	}else{
-		// more than one star was found
-		if(verbosity){
-			std::cout<<"sccan_image -> ";
-			std::cout<<"find_bright_star_in_star_image() -> ";
-			std::cout<<" found "<<list_of_clusters.size();
-			std::cout<<" stars brighter than ";
-			std::cout<<threshold_in_sigmas<<" sigma."<<std::endl;
-		}
-	}
-	*/
 }
 //======================================================================
 double sccan_image::mean_light_flux_in_bulbs_of_complex_image_region(

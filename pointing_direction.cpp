@@ -89,8 +89,8 @@ get_angle_text_prompt_in_deg_arc_min_arc_sec(double angle_in_rad){
 	return out.str();
 }
 //======================================================================
-pointing_direction pointing_direction::operator*(
-const double ScaleFactor) const{
+pointing_direction pointing_direction::
+operator*(const double ScaleFactor) const{
 	pointing_direction temp;
 	
 	temp.direction_in_x_in_radiant = 
@@ -101,3 +101,28 @@ const double ScaleFactor) const{
 	
 	return temp;
 }
+//======================================================================
+pointing_direction pointing_direction::
+operator+(const pointing_direction dir_to_add) const{
+	
+	pointing_direction temp;
+	
+	temp.direction_in_x_in_radiant = 
+	direction_in_x_in_radiant + dir_to_add.direction_in_x_in_radiant;
+	
+	temp.direction_in_y_in_radiant = 
+	direction_in_y_in_radiant + dir_to_add.direction_in_y_in_radiant;
+	
+	return temp;
+}
+//======================================================================
+double pointing_direction::
+get_x_tilt_in_deg()const{
+	return direction_in_x_in_radiant*360.0/(2.0*M_PI);
+}
+//======================================================================
+double pointing_direction::
+get_y_tilt_in_deg()const{
+	return direction_in_y_in_radiant*360.0/(2.0*M_PI);
+}
+//======================================================================

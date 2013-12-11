@@ -69,7 +69,7 @@ void quick_align::run_alignment(){
 				display_help();
 			};
 			break;
-			default: int i=1;
+			default: ;
 		}
 	}
 	cv::destroyWindow(window_name_of_alignment_image.c_str());

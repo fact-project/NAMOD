@@ -20,6 +20,8 @@ reflector* new_pointer_to_reflector){
 	
 	normalize_mirror_response = true;
 	
+	max_only_instead_of_CoG = true;
+	
 	use_multithread = true;
 	
 	pointer_to_reflector = new_pointer_to_reflector;
@@ -42,7 +44,7 @@ fill_sccan_matrix(){
 	
 		#pragma omp parallel private(sccan_point_itterator) 
 		#pragma omp for schedule(dynamic) 	
-		for(int sccan_point_itterator = 0;
+		for(sccan_point_itterator = 0;
 		sccan_point_itterator<
 		pointer_to_sccan_point_pair_handler->
 		get_number_of_sccan_points_in_current_directory();
@@ -352,7 +354,18 @@ get_analysis_prompt(){
 		info<<"FALSE";
 	}
 	out<<make_nice_line_with_dots
-	("| toggle mirror response normalizing: ",info.str());	
+	("| mirror response normalizing: ",info.str());	
+
+	// method to estimate max response
+	info.str("");
+	if(max_only_instead_of_CoG){
+		info<<"maximum only";
+	}else{
+		info<<"centre of gravity";
+	}
+	out<<make_nice_line_with_dots
+	("| method to estimate brightest response direction: ",info.str());	
+
 
 	// multithreading
 	info.str("");
@@ -387,6 +400,10 @@ interaction(){
 	std::string key_toggle_light_flux_normalizing  ="n";
 	add_control(key_toggle_light_flux_normalizing,
 	"toggle mirror response normalizing");	
+	
+	std::string key_toggle_max_response_estimation_method  ="method";
+	add_control(key_toggle_max_response_estimation_method,
+	"toggle max response estimation method");
 	
 	std::string key_draw_all_mirror_response_maps  ="draw";
 	add_control(key_draw_all_mirror_response_maps,
@@ -451,6 +468,10 @@ interaction(){
 	//==================================================================
 	if(valid_user_input.compare(key_toggle_multithread)==0){
 		use_multithread = ! use_multithread;	
+	}
+	//==================================================================
+	if(valid_user_input.compare(key_toggle_max_response_estimation_method)==0){
+		max_only_instead_of_CoG =! max_only_instead_of_CoG;	
 	}
 	//==================================================================
 }while(flag_user_wants_to_analyse);
@@ -525,6 +546,82 @@ uint mirror_iterator){
 		
 	return (*iterator_to_brightest_sccan_point)->
 	get_star_position_relative_to_pointing_direction();
+}
+//======================================================================
+pointing_direction sccan_point_analysis::
+CentreOfGravityPointingDirectionOfMirrorResponse(uint mirror_iterator){
+	
+	std::stringstream CoG_protocol;
+	
+	pointing_direction CentreOfGravity;
+	
+	CoG_protocol << "____Start_CoG_pointing_direction_calculation___\n";
+	CoG_protocol << "| CoG start:\n";
+	CoG_protocol << "| x dir: " << CentreOfGravity.get_x_tilt_prompt_in_deg_min_sec() << "\n";
+	CoG_protocol << "| y dir: " << CentreOfGravity.get_y_tilt_prompt_in_deg_min_sec() << "\n";
+	
+	double sum_of_all_weights_of_mirror_response = 0.0;
+	
+	CoG_protocol << "| initial sum of all weights: " << sum_of_all_weights_of_mirror_response << "\n";
+	
+	for(uint SPit = 0; SPit<get_number_of_sccan_points(); SPit++){
+		
+		CoG_protocol << "| \n";
+		CoG_protocol << "| __sccan analysis point_ " << SPit << "_of_" << get_number_of_sccan_points() << "___\n";
+		
+		double weight_of_mirror_response = 0.0;
+
+		if(normalize_mirror_response)
+		{
+			weight_of_mirror_response = 
+			sccan_matrix.at(SPit).at(mirror_iterator)->
+			get_normalized_light_flux();
+			
+			CoG_protocol << "| | weight: " << weight_of_mirror_response << "[1] (normalized)\n";
+					
+		}else
+		{
+			weight_of_mirror_response = 
+			sccan_matrix.at(SPit).at(mirror_iterator)->
+			get_mirror_light_flux();
+
+			CoG_protocol << "| | weight: " << weight_of_mirror_response << "[Bulbs] (not normalized)\n";			
+		}
+					
+		sum_of_all_weights_of_mirror_response += 
+		weight_of_mirror_response;	
+		
+		CoG_protocol << "| | sum of all weights: " << sum_of_all_weights_of_mirror_response << "\n";
+		
+		CentreOfGravity = CentreOfGravity + 
+		sccan_matrix.at(SPit).at(mirror_iterator)->
+		get_star_position_relative_to_pointing_direction()*
+		weight_of_mirror_response;
+		
+		CoG_protocol << "| | Centre of Gravity (not normalized):\n";
+		CoG_protocol << "| | x dir: " << CentreOfGravity.get_x_tilt_prompt_in_deg_min_sec() << "\n";
+		CoG_protocol << "| | y dir: " << CentreOfGravity.get_y_tilt_prompt_in_deg_min_sec() << "\n";
+		CoG_protocol << "| |________________________________________\n";		
+	}
+	
+	CentreOfGravity = 
+	CentreOfGravity*(1.0/sum_of_all_weights_of_mirror_response);
+	
+	CoG_protocol << "| Final Centre of Gravity :\n";
+	CoG_protocol << "| x dir: " << CentreOfGravity.get_x_tilt_prompt_in_deg_min_sec() << "\n";
+	CoG_protocol << "| y dir: " << CentreOfGravity.get_y_tilt_prompt_in_deg_min_sec() << "\n";
+
+	if(sccan_point_analysis_verbosity){
+		std::cout<<"sccan_point_analysis -> ";
+		std::cout<<"CentreOfGravityPointingDirectionOfMirrorResponse() -> ";
+		std::cout<<"mirror ID "<<
+		sccan_matrix.at(0).at(mirror_iterator)->get_mirror_ID();
+		std::cout<<" -> \n";
+		std::cout<<CoG_protocol.str();
+	}	
+	
+	return CentreOfGravity;
+	
 }
 //======================================================================
 void sccan_point_analysis::
@@ -662,16 +759,22 @@ draw_mirror_response(uint mirror_iterator){
 	// calculate
 	//==================================================================	
 
-	pointing_direction best_dir = 
-	PointingDirectionOfStarAtMaxMirrorResponse(
-	mirror_iterator);
+	pointing_direction best_dir;
+	
+	if(max_only_instead_of_CoG){
+		best_dir = 
+		PointingDirectionOfStarAtMaxMirrorResponse(mirror_iterator);
+	}else{
+		best_dir = 
+		CentreOfGravityPointingDirectionOfMirrorResponse(mirror_iterator);
+	}
 	
 	mglData bM_x(1);
 	mglData bM_y(1);
 	mglData bM_z(1);
 		
-	bM_x[0] = best_dir.direction_in_x_in_radiant*(360.0/(2.0*M_PI));
-	bM_y[0] = best_dir.direction_in_y_in_radiant*(360.0/(2.0*M_PI));
+	bM_x[0] = best_dir.get_x_tilt_in_deg();
+	bM_y[0] = best_dir.get_y_tilt_in_deg();
 	bM_z[0] = 1.5*mirror_response.Maximal();
 
 	//~ std::cout<<"mean x pos "<<bM_x[0]<<std::endl;
@@ -686,9 +789,6 @@ draw_mirror_response(uint mirror_iterator){
 	plot_heading << sccan_matrix.at(0).at(mirror_iterator)->
 	get_mirror_ID();
 	plot_heading << " response map";
-	
-	double x_range = 5.0;
-	double y_range = 5.0;
 	
 	mglData xy_hist = gr.Hist(
 	rel_poi_dir_of_star_x_in_deg,
@@ -719,9 +819,16 @@ draw_mirror_response(uint mirror_iterator){
 	gr.Box(); 
 	gr.Light(true);
 	
-	gr.ContV(xy_hist);
-	gr.ContF(xy_hist);
-	gr.Cont(xy_hist,"k");
+	//gr.ContV(xy_hist);
+	//gr.ContF(xy_hist);
+	//gr.Cont(xy_hist,"k");
+	
+	gr.Stem(
+	rel_poi_dir_of_star_x_in_deg,
+	rel_poi_dir_of_star_y_in_deg,
+	mirror_response,
+	"o");
+	
 	// best fit result
 	//~ gr.Stem(
 	//~ best_x,
@@ -756,9 +863,21 @@ draw_mirror_response(uint mirror_iterator){
 	gr.Box(); 
 	gr.Light(true);
 	
-	gr.ContV(xy_hist);
-	gr.ContF(xy_hist);
-	gr.Cont(xy_hist,"k");
+	//gr.ContV(xy_hist);
+	//gr.ContF(xy_hist);
+	//gr.Cont(xy_hist,"k");
+
+	gr.Stem(
+	rel_poi_dir_of_star_x_in_deg,
+	rel_poi_dir_of_star_y_in_deg,
+	mirror_response,
+	"o");
+	
+	gr.Stem(
+	bM_x,
+	bM_y,
+	bM_z,
+	"rx");
 
 	gr.WriteFrame(plot_file_name.str().c_str());	// save it
 }
@@ -796,7 +915,7 @@ run_anaysis(){
 	if(use_multithread){
 		#pragma omp parallel shared(instruction_table) private(MIit) 
 		#pragma omp for schedule(dynamic) 
-		for(uint MIit = 0; MIit < get_number_of_mirrors(); MIit++){
+		for(MIit = 0; MIit < get_number_of_mirrors(); MIit++){
 		
 			analyse_single_mirror_and_get_instructions
 			(MIit,&instruction_table);
@@ -873,13 +992,22 @@ uint MIit, std::stringstream *instruction_table){
 	draw_mirror_response(MIit);
 	
 	// get instructions
-	*instruction_table << 
-	pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
-	get_manipulation_instructions(
 	
-	PointingDirectionOfStarAtMaxMirrorResponse(MIit)
-		
-	);
+	if(max_only_instead_of_CoG){
+		*instruction_table << 
+		pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
+		get_manipulation_instructions(
+		PointingDirectionOfStarAtMaxMirrorResponse(MIit)
+		);
+	}else{
+		*instruction_table << 
+		pointer_to_reflector -> list_of_pointers_to_mirrors.at(MIit) ->
+		get_manipulation_instructions(
+		CentreOfGravityPointingDirectionOfMirrorResponse(MIit)	
+		);
+	}
+	
+
 	
 }
 

@@ -23,7 +23,7 @@ cv::Point list_of_pixel_positions::get_mean_of_pixel_distribution(){
 	
 	cv::Point mean;
 	for(
-	int point_itterator=0;
+	uint point_itterator=0;
 	point_itterator<list_of_points.size();
 	point_itterator++)
 	{
@@ -66,7 +66,7 @@ void list_of_pixel_positions::operator=(list_of_pixel_positions eq){
 //======================================================================
 void list_of_pixel_positions::disp(){	
 	std::cout<<"list_of_pixel_positions-> ";
-	for(int point_itterator=0;
+	for(uint point_itterator=0;
 	point_itterator<list_of_points.size();
 	point_itterator++){
 		

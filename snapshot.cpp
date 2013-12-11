@@ -190,7 +190,7 @@ interaction(){
 	if(valid_user_input.compare(key_modify_camera_ID)==0){
 		
 		std::vector<int> list_of_valid_camera_IDs;
-		for(int cam_itt=0;
+		for(uint cam_itt=0;
 		cam_itt<list_of_pointers_to_cameras.size();
 		cam_itt++)
 		{
@@ -201,26 +201,6 @@ interaction(){
 		uint user_chosen_camera_ID =ask_user_for_integer
 		("Enter camera ID",&list_of_valid_camera_IDs);
 		choose_camera(user_chosen_camera_ID);
-		/*
-		bool flag_user_input_camera_ID_is_valid = false;
-		uint user_chosen_camera_ID;
-		do{
-			user_chosen_camera_ID = 
-			(uint)ask_user_for_integer("Enter camera ID",0,256);
-			
-			if(choose_camera(user_chosen_camera_ID))
-			{
-				//camera was found
-				flag_user_input_camera_ID_is_valid = true;
-			}else{
-				//camera is not in list
-				out.str("");
-				out<<"->"<<user_chosen_camera_ID<<"<- ";
-				out<<"is not in camera ID list!"<<std::endl;
-				std::cout<<out.str();	
-			}
-		}while( !flag_user_input_camera_ID_is_valid  );
-		*/
 	}
 	//==================================================================
 
@@ -243,7 +223,7 @@ snapshot::get_snapshot_prompt(){
 	std::stringstream out, info;
 	
 	out<<"| cameras (IDs): ";
-	for(int camera_itterator=0;
+	for(uint camera_itterator=0;
 	camera_itterator<list_of_pointers_to_cameras.size();
 	camera_itterator++){
 	out<<
@@ -297,7 +277,7 @@ snapshot::get_snapshot_prompt(){
 bool snapshot::choose_camera(uint camera_ID_to_use){
 	bool camera_found = false;
 	
-	for(int camera_itterator=0;
+	for(uint camera_itterator=0;
 	camera_itterator<list_of_pointers_to_cameras.size();
 	camera_itterator++)
 	{
