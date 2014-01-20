@@ -103,12 +103,15 @@ get_star_recognition_test_prompt(){
 	// threshold
 	info.str("");
 	info<<test_threshold_in_sigmas<<"[1]";
-	out<<make_nice_line_with_dots("| threshold in sigmas for star detection",info.str());	
+	out<<make_nice_line_with_dots(
+	"| threshold in sigmas for star detection",info.str());	
 	
 	// recog radius
 	info.str("");
-	info<<test_radius_of_one_sigma_region_for_star_detection_in_degrees<<"[DEG]";
-	out<<make_nice_line_with_dots("| radius of 1 sigma region for star detection",info.str());	
+	info<<test_radius_of_one_sigma_region_for_star_detection_in_degrees;
+	info<<"[DEG]";
+	out<<make_nice_line_with_dots(
+	"| radius of 1 sigma region for star detection",info.str());	
 	
 	out<<get_line_of_specific_character("_",command_line_columns-1);
 	out<<std::endl;
@@ -137,7 +140,8 @@ test_star_recognition(){
 		sccan_image_to_be_tested.set_name(name_of_image);
 	
 		std::cout<<"testing_star_recognition->show_image->";
-		std::cout<<"sccan image -> copy image matrix of "<<name_of_image<<"\n";	
+		std::cout<<"sccan image -> copy image matrix of ";
+		std::cout<<name_of_image<<"\n";	
 		sccan_image_to_be_tested = image_to_be_tested;
 
 		std::cout<<"testing_star_recognition->show_image->";
@@ -146,11 +150,10 @@ test_star_recognition(){
 		set_intrinsic_parameters(parameters_of_image_to_be_tested);
 		
 		std::cout<<"testing_star_recognition->show_image->";
-		std::cout<<"sccan image -> set exposure time to "<<test_exposure_time_in_ms<<"ms\n";	
+		std::cout<<"sccan image -> set exposure time to ";
+		std::cout<<test_exposure_time_in_ms<<"ms\n";	
 		sccan_image_to_be_tested.
 		set_exposure_time_in_ms(test_exposure_time_in_ms);
-		
-		sccan_image_to_be_tested.disp();
 
 		std::cout<<"testing_star_recognition->show_image->";
 		std::cout<<"activate verbosity..."<<"\n";	
@@ -170,6 +173,24 @@ test_star_recognition(){
 		test_radius_of_one_sigma_region_for_star_detection_in_degrees,
 		true
 		);
+
+		std::cout<<"testing_star_recognition->show_image->";
+		std::cout<<"create star overlay..."<<"\n";	
+		
+		// display all stars found in image
+		// star ring colour in BGR
+		cv::Scalar color_of_ring(0.0,0.0,255.0);
+		simple_image image_to_be_tested_with_star_overlay;
+		
+		image_to_be_tested_with_star_overlay =
+		sccan_image_to_be_tested.
+		get_overlay_with_stars(stars_found_in_test_image,color_of_ring);
+		
+		std::cout<<"testing_star_recognition->show_image->";
+		std::cout<<"show image to test with star overlay..."<<"\n";	
+		
+		image_to_be_tested_with_star_overlay.
+		disp_simple_image("image to be tested with star overlay");
 		
 	}else{
 		std::cout<<"testing_star_recognition->show_image->";

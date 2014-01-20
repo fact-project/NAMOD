@@ -428,7 +428,7 @@ create_list_of_Points_of_non_zero_pixels(){
 		std::cout<<"create_list_of_Points_of_non_zero_pixels()";
 		std::cout<<" -> ";
 		std::cout<< list_of_Points_of_non_zero_pixels.size();
-		std::cout<<" pixels found in mask."<<std::endl;
+		std::cout<<" pixels found in mask of size ["<<image_matrix.cols<<","<<image_matrix.rows<<"]px"<<std::endl;
 	}
 	return list_of_Points_of_non_zero_pixels;
 }
@@ -640,9 +640,7 @@ get_resized_image
 }
 //======================================================================
 std::vector<list_of_pixel_positions> simple_image::
-spatial_clustering_of_threshold_mask(){
-	
-	bool show_controll_images = false;
+spatial_clustering_of_threshold_mask(bool show_controll_images){
 	
 	if(verbosity){
 		std::cout<<"simple_image -> ";
@@ -650,15 +648,17 @@ spatial_clustering_of_threshold_mask(){
 		std::cout<<std::endl;
 		if(show_controll_images)
 		disp_simple_image("spatial_clustering(threshold image)");
+		std::cout<<"________________________________________________\n";
 	}
 	
 	std::vector<list_of_pixel_positions> list_of_clusters;
 	list_of_clusters.clear();
 	int cluster_itterator = 0;
-	const int cluster_limit = 25;
+	const int cluster_limit = 256;
 	bool there_are_still_bright_pixel_not_part_of_a_cluster;
+	
 	do{
-		there_are_still_bright_pixel_not_part_of_a_cluster=false;
+		there_are_still_bright_pixel_not_part_of_a_cluster = false;
 		
 		cv::Point 	brightest_pixel_point; 
 		double 		brightest_pixel_value;
@@ -675,14 +675,12 @@ spatial_clustering_of_threshold_mask(){
 			std::cout<<brightest_pixel_value<<"pxv."<<std::endl;
 		}		
 		
-		// check whether the brightest Point is valid or not
 		if(brightest_pixel_value > 0.0){
+			
 			if(verbosity){
 				std::cout<<"simple_image -> ";
 				std::cout<<"spatial_clustering_of_threshold_mask() -> ";
-				std::cout<<"there is still at least one pixel ";
-				std::cout<<"not part of a cluster because the brightest ";
-				std::cout<<"pixel is > 0.0"<<std::endl;
+				std::cout<<"there is at least one pixel > 0.0"<<std::endl;
 			}
 			there_are_still_bright_pixel_not_part_of_a_cluster = true;
 			
@@ -698,6 +696,7 @@ spatial_clustering_of_threshold_mask(){
 			}			
 			
 			simple_image flood_mask;
+			flood_mask.toggle_verbosity(verbosity);
 			flood_mask.image_matrix.create(
 			image_matrix.rows+2,
 			image_matrix.cols+2,
@@ -715,15 +714,6 @@ spatial_clustering_of_threshold_mask(){
 				("flood mask before flood +2 rows and columns");
 			}
 
-			/*
-			flood_mask = threshold_mask;
-			cv::cvtColor(
-			threshold_mask.image_matrix,
-			flood_mask.image_matrix,
-			CV_BGR2GRAY);
-			*/
-			//cv::Scalar new_intensity;
-			//new_intensity[0]=255;
 			uchar fillValue = 128;
 			cv::floodFill(
 			image_matrix,
@@ -742,8 +732,8 @@ spatial_clustering_of_threshold_mask(){
 			}
 			
 			flood_mask.image_matrix = flood_mask.image_matrix(
-			cv::Range(1,image_matrix.rows-1),
-			cv::Range(1,image_matrix.cols-1)
+			cv::Range(1,flood_mask.image_matrix.rows-1),
+			cv::Range(1,flood_mask.image_matrix.cols-1)
 			);
 
 			if(show_controll_images){
@@ -755,7 +745,14 @@ spatial_clustering_of_threshold_mask(){
 			// create list of all pixels part of new cluster
 			list_of_pixel_positions list_of_points_of_next_cluster = 
 			flood_mask.create_list_of_Points_of_non_zero_pixels();
-			
+
+			if(verbosity){
+				std::cout<<"simple_image -> ";
+				std::cout<<"spatial_clustering_of_threshold_mask() -> ";
+				std::cout<<list_of_points_of_next_cluster.size();
+				std::cout<<" pixels in next cluster\n";
+			}
+
 			list_of_clusters.push_back(list_of_points_of_next_cluster);
 			
 			// increase cluster itterator
@@ -774,13 +771,28 @@ spatial_clustering_of_threshold_mask(){
 				list_of_points_of_next_cluster.at(point_itterator)
 				) 
 				= zero_intensity;
+				
+				if(verbosity){
+					std::cout<<"simple_image -> ";
+					std::cout<<"spatial_clustering_of_threshold_mask() -> ";
+					std::cout<<"removing pixel (";
+					std::cout<<list_of_points_of_next_cluster.
+					at(point_itterator).x;
+					std::cout<<"|"<<list_of_points_of_next_cluster.
+					at(point_itterator).y<<")px"<<std::endl;
+				}
 			}
-		
+			
 			if(verbosity){
 				std::cout<<"simple_image -> ";
 				std::cout<<"spatial_clustering_of_threshold_mask() -> ";
-				std::cout<<"update threshold mask"<<std::endl;
+				std::cout<<"update threshold mask"<<std::endl;	
+				//show modified threshold mask		
+				if(show_controll_images){
+					disp_simple_image("modified threshold mask");
+				}
 			}
+			
 		}else{
 		
 			if(verbosity){
@@ -790,15 +802,16 @@ spatial_clustering_of_threshold_mask(){
 			}
 			there_are_still_bright_pixel_not_part_of_a_cluster = false;		
 		}
+		
 	}while(there_are_still_bright_pixel_not_part_of_a_cluster &&
 	cluster_limit>=cluster_itterator);
-	
 		
 	if(verbosity){
 		std::cout<<"simple_image -> ";
 		std::cout<<"spatial_clustering_of_threshold_mask() -> ";
 		std::cout<<list_of_clusters.size()<<" cluster(s) have been found.";
-		std::cout<<std::endl;
+		std::cout<<std::endl;		
+		std::cout<<"________________________________________________\n";
 	}	
 	
 	return list_of_clusters;

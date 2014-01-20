@@ -72,7 +72,8 @@ simple_image get_overlay_with_stars
 simple_image get_resized_image
 (int height_of_alignment_image,double* scaling_factor_for_image);
 //======================================================================
-std::vector<list_of_pixel_positions> spatial_clustering_of_threshold_mask();
+std::vector<list_of_pixel_positions> 
+spatial_clustering_of_threshold_mask(bool show_controll_images);
 //======================================================================
 // image overlays
 //======================================================================

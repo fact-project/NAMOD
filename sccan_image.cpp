@@ -554,8 +554,11 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 	//spatial clustering
 	//==================================================================
 	std::vector<list_of_pixel_positions>  list_of_clusters;
-	list_of_clusters =threshold_image.
-	spatial_clustering_of_threshold_mask();
+	
+	threshold_image.toggle_verbosity(show_control_images);
+	
+	list_of_clusters = threshold_image.
+	spatial_clustering_of_threshold_mask(false);
 
 	
 
