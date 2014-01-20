@@ -8,7 +8,8 @@ quick_align *new_pointer_to_quick_align,
 sccan_point_analysis *new_pointer_to_sccan_point_analysis,
 verbosity_handler *new_pointer_to_verbosity_handler,
 ueye_camera *new_pointer_to_star_camera,
-ueye_camera *new_pointer_to_reflector_camera){
+ueye_camera *new_pointer_to_reflector_camera,
+star_recognition_test_environment *new_pointer_to_test_environment){
 	
 	pointer_to_snapshot = 
 	new_pointer_to_snapshot;
@@ -30,6 +31,8 @@ ueye_camera *new_pointer_to_reflector_camera){
 	
 	pointer_to_star_camera = new_pointer_to_star_camera;
 	pointer_to_reflector_camera = new_pointer_to_reflector_camera;
+	
+	pointer_to_test_environment = new_pointer_to_test_environment;
 	
 	menu_name = "Mirror alignment main menu";
 }
@@ -84,6 +87,9 @@ void main_menu::interaction(){
 	add_control(key_toggle_verbosity,
 	"toggle programm verbosity");
 	
+	std::string key_start_test_environment ="t";
+	add_control(key_start_test_environment,	"start test environment");
+	
 	std::string key_user_wants_to_end_mirror_alignment  ="quit";
 	add_control(key_user_wants_to_end_mirror_alignment,
 	"quit mirror alignment");
@@ -127,6 +133,10 @@ void main_menu::interaction(){
 	if(valid_user_input.
 	compare(key_user_wants_to_acquire_sccan_points)==0){
 		pointer_to_sccan_point_pair_handler->interaction();
+	} 
+	//==================================================================
+	if(valid_user_input.compare(key_start_test_environment)==0){
+		pointer_to_test_environment->interaction();
 	} 
 	//==================================================================
 	if(valid_user_input.

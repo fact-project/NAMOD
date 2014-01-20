@@ -36,6 +36,7 @@ sccan_point_analysis.cpp
 verbosity_handler.cpp
 main_menu.cpp
 Vector3D.cpp
+star_recognition_test_environment.cpp
 )
 #=======================================================================
 # UEYE IDS imaging

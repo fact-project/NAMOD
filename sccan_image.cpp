@@ -338,9 +338,9 @@ void sccan_image::operator=(simple_image eq){
 }
 //======================================================================
 std::vector<star_in_image> sccan_image::find_stars(double threshold_in_sigmas,
-double radius_of_one_sigma_region_for_star_detection_in_degrees){
+double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_control_images){
 	
-	bool show_control_images = false;
+	//bool show_control_images = false;
 	
 	if(verbosity){
 		std::cout<<"sccan_image -> ";

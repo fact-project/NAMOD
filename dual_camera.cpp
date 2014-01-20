@@ -31,6 +31,7 @@
 #include "sccan_point_analysis.h"
 #include "verbosity_handler.h"
 #include "main_menu.h"
+#include "star_recognition_test_environment.h"
 
 /*@ open CV  
 \begin{figure}[H]
@@ -60,11 +61,17 @@ int main(){
 		//==============================================================
 	intrinsic_camera_parameter parameters_for_star_camera;
 	
+	/*
 	parameters_for_star_camera.set_names(
 	"ueye 5MPx CMOS",
 	"Carl Zeiss Flektogon F2.4 / f35mm");
 
 	parameters_for_star_camera.set_FoV_to_pixel_mapping(3.34375E-3);
+	*/
+	parameters_for_star_camera.set_names(
+	"ueye 5MPx CMOS","Flektogon F1.8 / f50mm");
+	
+	parameters_for_star_camera.set_FoV_to_pixel_mapping(0.002427534);
 	
 	parameters_for_star_camera.
 	set_coefficients_for_radiometric_correction_plane(
@@ -115,6 +122,8 @@ int main(){
 	reflector reflector_instance(&reflector_camera);
 	quick_align quick(&reflector_instance,&sccan_handle);
 	
+	//tester
+	star_recognition_test_environment test_environment;
 
 	sccan_point_analysis analysis(
 	&sccan_handle,&reflector_instance//,&star_camera
@@ -139,7 +148,8 @@ int main(){
 	&analysis,
 	&verbosity_interaction,
 	&star_camera,
-	&reflector_camera);
+	&reflector_camera,
+	&test_environment);
 	
 	menu.interaction();	
 	

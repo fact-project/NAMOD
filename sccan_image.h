@@ -85,7 +85,8 @@ void operator=(sccan_image eq);
 void operator=(simple_image eq);
 //======================================================================
 std::vector<star_in_image> find_stars(double threshold_in_sigmas,
-double radius_of_one_sigma_region_for_star_detection_in_degrees);
+double radius_of_one_sigma_region_for_star_detection_in_degrees,
+bool show_control_images);
 //======================================================================
 double mean_light_flux_in_bulbs_of_complex_image_region(
 list_of_pixel_positions *pointer_to_pixels_of_complex_region);

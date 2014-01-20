@@ -639,7 +639,8 @@ double radius_one_sigma_for_star_detection_in_degrees){
 	std::vector<star_in_image> list_of_stars_in_star_image =
 	star_image.find_stars(
 	threshold_in_sigmas,
-	radius_one_sigma_for_star_detection_in_degrees
+	radius_one_sigma_for_star_detection_in_degrees,
+	false
 	);
 
 	if(list_of_stars_in_star_image.size() == 1){

@@ -321,6 +321,21 @@ std::string user_interaction::get_alphanumeric_string_by_user(){
 	return user_input;
 }
 //======================================================================
+std::string user_interaction::get_string_by_user(){
+	std::string user_input;
+	
+		int sys_return =  system("clear");
+		std::cout<<get_menu_header();
+		std::cout<<status_prompt;
+		std::cout<<"Enter a string ";
+		std::cout<<std::endl;	
+		std::cout<<"->";
+
+		std::cin>>user_input;
+	
+	return user_input;
+}
+//======================================================================
 std::string user_interaction::get_menu_header(){
 	std::stringstream out;
 	out<<"O";

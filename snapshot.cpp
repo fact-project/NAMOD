@@ -412,7 +412,8 @@ double radius_in_deg_of_one_sigma_region_for_star_detection){
 	std::vector<star_in_image> list_of_all_stars_found_in_snapshot = 
 	snapshot_image_to_spectate_stars.find_stars(
 	threshold_in_sigmas_for_star_detection,
-	radius_in_deg_of_one_sigma_region_for_star_detection
+	radius_in_deg_of_one_sigma_region_for_star_detection,
+	false
 	);
 	
 	if(verbosity){

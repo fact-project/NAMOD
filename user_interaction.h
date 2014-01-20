@@ -57,6 +57,7 @@ bool integer_is_part_of_list
 (int candidate,std::vector<int> *pointer_to_list_of_valid_integer);
 //======================================================================
 std::string get_alphanumeric_string_by_user();
+std::string get_string_by_user();
 //======================================================================
 std::string get_menu_header();
 //======================================================================
