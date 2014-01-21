@@ -1,0 +1,58 @@
+% dual camera mirror alignment
+\documentclass{article}
+
+\usepackage[english]{babel}
+%
+\usepackage{titlesec}
+\titleformat{\chapter}{\bf\huge}{\thechapter\quad}{0em}{}
+\titlespacing{\chapter}{0pt}{-4em}{6pt}
+% nice tables
+\usepackage{booktabs}
+
+\usepackage{color}
+\usepackage{longtable}
+\usepackage[latin1]{inputenc}
+%\usepackage{Tex/nicehead}
+%\usepackage{Tex/mcode}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{calc}
+\usepackage{units}
+\usepackage{upgreek}
+\usepackage[pdfborder={0 0 0}, hypertexnames=false]{hyperref}
+\usepackage{graphicx}
+\usepackage{floatrow}
+%\pagestyle{emheadings}
+%cpp code
+\usepackage{listings}
+\usepackage{hyperref}
+
+
+\definecolor{comment_red}{rgb}{0.75,0.0,0.0}
+\definecolor{string_orange}{rgb}{0.75,0.5,0.0}
+\definecolor{morecomment_green}{rgb}{0.15,0.35,0.35}
+
+\lstset{
+language=C++,
+basicstyle=\ttfamily,
+keywordstyle=\color{blue}\ttfamily,
+stringstyle=\color{string_orange}\ttfamily,
+commentstyle=\color{comment_red}\ttfamily,
+morecomment=[l][\color{morecomment_green}]{\#},
+%keywordstyle=\color{blue},
+%commentstyle=\color{red},
+rulecolor=\color{black},
+basicstyle=\footnotesize,
+frame = single,
+linewidth=13cm,
+tabsize=4,
+escapeinside={/*@}{@*/}
+}
+
+\begin{document}
+\lstinputlisting{../dual_camera.cpp}
+UEYE camera
+\lstinputlisting{../ueye_camera.h}
+\end{document}
