@@ -20,10 +20,13 @@ class pointing_direction 		:public programm_verbosity{
 public:
 	double 	direction_in_x_in_radiant;
 	double 	direction_in_y_in_radiant;	
+	
+	uint		number_of_sccan_point_run_for_brightest_response;
 //======================================================================
 pointing_direction();
 //======================================================================
 pointing_direction(const double dir_x_in_rad,const double dir_y_in_rad);
+pointing_direction(const double dir_x_in_rad,const double dir_y_in_rad,uint sccan_run_number);
 //======================================================================
 std::string get_x_tilt_prompt_in_deg_min_sec();
 //======================================================================
@@ -35,6 +38,8 @@ std::string get_y_tilt_prompt_in_deg();
 //======================================================================
 double get_x_tilt_in_deg()const;
 double get_y_tilt_in_deg()const;
+uint get_sccan_run_number_of_highest_response()const;
+void set_sccan_run_number_of_highest_response(uint sccan_run_number);
 //======================================================================
 pointing_direction operator*(const double ScaleFactor)const;
 //======================================================================

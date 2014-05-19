@@ -543,9 +543,20 @@ uint mirror_iterator){
 		get_y_tilt_prompt_in_deg_min_sec();
 		std::cout<<std::endl;
 	}	
-		
-	return (*iterator_to_brightest_sccan_point)->
+	
+	pointing_direction brightest_response_direction = 
+	(*iterator_to_brightest_sccan_point)->
 	get_star_position_relative_to_pointing_direction();
+	
+	brightest_response_direction.
+	set_sccan_run_number_of_highest_response(
+	(*iterator_to_brightest_sccan_point)->get_sccan_run_number()
+	);
+	
+	std::cout << "Brightest direction taken in sccan run number " << 
+	(*iterator_to_brightest_sccan_point)->get_sccan_run_number() << std::endl;
+	
+	return brightest_response_direction;
 }
 //======================================================================
 pointing_direction sccan_point_analysis::

@@ -33,5 +33,7 @@ pointing_direction get_star_direction_relative_to_camera()const;
 //======================================================================
 cv::Point get_position_in_pixels()const;
 //======================================================================
+void set_sccan_run_number(uint run_number);
+//======================================================================
 };
 #endif // __STAR_INIMAGE_H_INCLUDED__ 

@@ -3,6 +3,7 @@
 sccan_analysis_point::sccan_analysis_point(){
 	verbosity = false;
 	mirror_ID = 0;
+	sccan_run_number = 0;
 	normalized_light_flux = 0.0;
 	star_light_flux_in_bulbs = 0.0;
 	mirror_light_flux_in_bulbs = 0.0;
@@ -140,3 +141,10 @@ void sccan_analysis_point::toggle_verbosity(bool new_verbosity){
 	toggle_verbosity(verbosity);
 }
 //======================================================================
+uint sccan_analysis_point::get_sccan_run_number()const{
+	return sccan_run_number;
+}
+//======================================================================
+void sccan_analysis_point::set_sccan_run_number(uint run_number){
+	sccan_run_number = run_number;
+}

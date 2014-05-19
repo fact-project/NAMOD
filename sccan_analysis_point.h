@@ -22,6 +22,7 @@ private:
 	double star_light_flux_in_bulbs;
 	double mirror_light_flux_in_bulbs;
 	
+	uint	sccan_run_number;
 	uint 	mirror_ID;
 
 public:	
@@ -42,6 +43,8 @@ double get_normalized_light_flux()const;
 double get_mirror_light_flux()const;
 //======================================================================
 double get_star_light_flux()const;
+uint get_sccan_run_number()const;
+void set_sccan_run_number(uint run_number);
 //======================================================================
 void set_star_position_relative_to_pointing_direction
 (pointing_direction new_star_position_relative_to_pointing_direction);

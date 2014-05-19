@@ -3,6 +3,7 @@
 pointing_direction::pointing_direction(){
 	direction_in_x_in_radiant = 0.0;
 	direction_in_y_in_radiant = 0.0;	
+	number_of_sccan_point_run_for_brightest_response = 0;
 }
 //======================================================================
 pointing_direction::pointing_direction(
@@ -126,3 +127,19 @@ get_y_tilt_in_deg()const{
 	return direction_in_y_in_radiant*360.0/(2.0*M_PI);
 }
 //======================================================================
+uint pointing_direction::get_sccan_run_number_of_highest_response()const{
+	return number_of_sccan_point_run_for_brightest_response;
+}
+//======================================================================
+void pointing_direction::set_sccan_run_number_of_highest_response(uint sccan_run_number){
+	number_of_sccan_point_run_for_brightest_response = sccan_run_number;
+}
+//======================================================================
+pointing_direction::pointing_direction(
+const double dir_x_in_rad,const double dir_y_in_rad,uint sccan_run_number){
+	
+	number_of_sccan_point_run_for_brightest_response = sccan_run_number;
+	
+	direction_in_x_in_radiant = dir_x_in_rad;
+	direction_in_y_in_radiant = dir_y_in_rad;
+}

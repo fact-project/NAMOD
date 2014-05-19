@@ -33,6 +33,8 @@ sccan_point_pair_handler(){
 	star_recognition_one_sigma_radius_in_degrees = 0.05;
 	max_number_of_exposure_manipulations = 25;
 	
+	max_exposure_time_until_sccan_point_is_not_valid_anymore = 2500.0;
+	
 	exposure_range_is_good = true;
 	
 	update_list_of_star_positions();
@@ -207,8 +209,9 @@ bool *pointer_to_exposure_range_is_good){
 	current_sccan_point.
 	set_cameras(pointer_to_star_camera,pointer_to_reflector_camera);
 				
-	bool max_number_of_exposure_manipulations_has_been_exceeded 
-	= false;
+	bool max_number_of_exposure_manipulations_has_been_exceeded = false;
+	
+	bool max_exposure_time_has_been_exceeded = false;
 	
 	// acquire sccan point
 	current_sccan_point.acquire_sccan_images(
@@ -217,10 +220,13 @@ bool *pointer_to_exposure_range_is_good){
 	star_camera_desired_max_relative_camera_response,	
 	reflector_camera_desired_max_relative_camera_response,		
 	max_number_of_exposure_manipulations,
-	&max_number_of_exposure_manipulations_has_been_exceeded
+	&max_number_of_exposure_manipulations_has_been_exceeded,
+	max_exposure_time_until_sccan_point_is_not_valid_anymore,
+	&max_exposure_time_has_been_exceeded
 	);
 	
-	if(max_number_of_exposure_manipulations_has_been_exceeded){
+	if(max_number_of_exposure_manipulations_has_been_exceeded ||
+	max_exposure_time_has_been_exceeded){
 		std::cout<<"sccan_point_pair_handler -> ";
 		std::cout<<"acquire_sccan_points() -> ";
 		std::cout<<"desired exposure time can not be reached!"<<std::endl;
@@ -311,6 +317,12 @@ get_prompt(){
 	out<<make_nice_line_with_dots
 	("| max number of exposure itterations",info.str());
 	
+	// max_exposure_time_until_sccan_point_is_not_valid_anymore
+	info.str("");
+	info<<max_exposure_time_until_sccan_point_is_not_valid_anymore<<"[ms]";
+	out<<make_nice_line_with_dots
+	("| max exposure time",info.str());	
+	
 	out<<"|";
 	out<<get_line_of_specific_character("_",command_line_columns-1);
 	out<<std::endl;
@@ -329,6 +341,7 @@ interaction(){
 	std::string key_user_wants_to_end_taking_sccan_points  ="back";
 	std::string key_modify_star_cam_desired_max_rel_respone  ="star_cr";	
 	std::string key_modify_refl_cam_desired_max_rel_respone  ="refl_cr";
+	std::string key_max_valid_exposure_time = "max_exp";
 		
 	add_control(key_user_wants_to_take_more_sccan_points,
 	"aquire >N< additional sccan points");
@@ -364,6 +377,9 @@ interaction(){
 	add_control
 	(key_user_wants_to_end_taking_sccan_points,
 	"back to main menu");	
+
+	add_control(key_max_valid_exposure_time,
+	"set max valid exposure time");
 	
 	std::string user_input;
 	
@@ -438,6 +454,13 @@ interaction(){
 		reflector_camera_desired_max_relative_camera_response = 
 		ask_user_for_non_zero_float(
 		"enter new relative reflector camera response (0,1)",0.01,0.99);
+	}
+	//==================================================================
+	if(valid_user_input.compare(
+	key_max_valid_exposure_time)==0){
+		max_exposure_time_until_sccan_point_is_not_valid_anymore = 
+		ask_user_for_non_zero_float(
+		"enter new maximal valid exposure time [ms]",0.01,60000);
 	}
 	//==================================================================
 }while(flag_user_wants_to_acquire_sccan_points);	

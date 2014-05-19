@@ -104,7 +104,9 @@ double *pointer_to_reflector_exposure_time_in_ms,
 double desired_max_rel_star_cam_response,
 double desired_max_rel_refl_cam_response,
 int		max_number_of_exposure_itterations,
-bool	*max_number_of_exposure_itterations_has_been_exceeded
+bool	*max_number_of_exposure_itterations_has_been_exceeded,
+double  max_valid_exposure_time,
+bool    *max_valid_exposure_time_exceeded
 );
 //======================================================================
 bool save_sccan_point_configuration();

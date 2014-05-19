@@ -834,7 +834,166 @@ double *pointer_to_desired_exposure_time_in_ms){
 //======================================================================
 bool ueye_camera::acquire_image(
 double *pointer_to_desired_exposure_time_in_ms,
-double desired_relative_maximal_camera_response){
+double desired_relative_maximal_camera_response,
+double max_valid_exposure_time){
+	
+	if(desired_relative_maximal_camera_response<0.0 || 
+	desired_relative_maximal_camera_response>1.0){
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"desired_relative_maximal_camera_response out of range ";
+		std::cout<<"[0,1] -> "<<desired_relative_maximal_camera_response;
+		std::cout<<std::endl;
+		return false;
+	}	
+	
+	if(*pointer_to_desired_exposure_time_in_ms<=0.0){
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"desired_exposure_time_in_ms <= 0.0 ";
+		std::cout<<*pointer_to_desired_exposure_time_in_ms<<"ms";
+		std::cout<<std::endl;
+		return false;
+	}
+	
+	if(max_valid_exposure_time<=0.0){
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"max_valid_exposure_time <= 0.0 ";
+		std::cout<<max_valid_exposure_time<<"ms";
+		std::cout<<std::endl;
+		return false;
+	}
+	
+	bool exposure_time_is_bad = true;
+	bool image_acquisition_successfull = false;
+	
+	if(verbosity){
+		std::cout<<"_________________________________________________"<<std::endl;
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"with desired camera respone ";
+		std::cout<<desired_relative_maximal_camera_response<<std::endl;
+	}
+	
+	int exposure_itterations = 0;
+	
+	do{	
+		if(max_valid_exposure_time <= *pointer_to_desired_exposure_time_in_ms){
+			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+			std::cout<<"acquire_image() -> ";
+			std::cout<<"exposure time exceeds the limit of";
+			std::cout<<max_valid_exposure_time<<"ms"<<std::endl;
+			
+			*pointer_to_desired_exposure_time_in_ms = 
+			max_valid_exposure_time/2.0;
+					
+			return false;
+		}
+		
+		if(verbosity){
+			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+			std::cout<<"acquire_image() -> ";
+			std::cout<<"exposure time ";
+			std::cout<<*pointer_to_desired_exposure_time_in_ms<<std::endl;
+		}
+		
+		image_acquisition_successfull = acquire_image(
+		pointer_to_desired_exposure_time_in_ms);
+		
+		double min_relative_camera_response = 0.5;
+		double max_relative_camera_response = 0.5;
+		
+		latest_image.get_relative_min_and_max_pixel_value(
+		&min_relative_camera_response,
+		&max_relative_camera_response);
+		
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> ";
+		std::cout<<"exp. time iteration No.: ";
+		std::cout<<exposure_itterations;
+		std::cout<<" -> exp. time = ";
+		std::cout<<*pointer_to_desired_exposure_time_in_ms;
+		std::cout<<"ms, ";
+		std::cout<<"max rel. response = ";
+		std::cout<<max_relative_camera_response<<"[1]"<<std::endl;
+		
+		if(verbosity){
+			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+			std::cout<<"acquire_image() -> ";
+			std::cout<<"max_relative_camera_response ";
+			std::cout<<max_relative_camera_response<<std::endl;
+		}		
+		
+		double relative_camera_response_difference = 
+		desired_relative_maximal_camera_response -
+		max_relative_camera_response;
+		
+		if(verbosity){
+			std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+			std::cout<<"acquire_image() -> ";
+			std::cout<<"relative_camera_response_difference ";
+			std::cout<<relative_camera_response_difference;
+			std::cout<<std::endl;
+		}		
+		
+		if(
+		fabs(relative_camera_response_difference) <= 0.05 &&
+		max_relative_camera_response != 1.0
+		){
+			exposure_time_is_bad = false;
+			if(verbosity){
+				std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+				std::cout<<"acquire_image() -> ";
+				std::cout<<"abs(relative_camera_response_difference) ";
+				std::cout<<fabs(relative_camera_response_difference);
+				std::cout<<std::endl;
+			}
+		}else{
+			
+			exposure_time_is_bad = true;
+			image_acquisition_successfull = false;
+			exposure_itterations++;
+			
+			double exposure_time_scaling_factor;
+			
+			if(max_relative_camera_response == 1.0){
+				exposure_time_scaling_factor = 0.5;
+			}else if(max_relative_camera_response == 0.0){
+				exposure_time_scaling_factor = 2.0;
+			}else{
+				exposure_time_scaling_factor = 
+				pow(2.0,relative_camera_response_difference);
+			}
+		
+			if(verbosity){
+				std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+				std::cout<<"acquire_image() -> ";
+				std::cout<<"relative_camera_response_difference ";
+				std::cout<<relative_camera_response_difference;
+				std::cout<<" scaling "<<exposure_time_scaling_factor<<std::endl;
+			}
+			
+			(*pointer_to_desired_exposure_time_in_ms) =
+			(*pointer_to_desired_exposure_time_in_ms)*
+			exposure_time_scaling_factor;
+		}
+	}while(exposure_time_is_bad && exposure_itterations<=25);
+	
+	if(verbosity){
+		std::cout<<"ueye camera ID: "<<ueye_camera_id<<" -> ";
+		std::cout<<"acquire_image() -> images taken with desired ";
+		std::cout<<"camera response";
+		std::cout<<std::endl;
+		std::cout<<"_________________________________________________"<<std::endl;
+	}
+	return image_acquisition_successfull;
+}
+//======================================================================
+bool ueye_camera::acquire_image(
+double *pointer_to_desired_exposure_time_in_ms,
+double desired_relative_maximal_camera_response
+){
 	
 	if(desired_relative_maximal_camera_response<0.0 || 
 	desired_relative_maximal_camera_response>1.0){

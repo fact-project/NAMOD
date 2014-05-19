@@ -79,6 +79,11 @@ bool acquire_image(double *pointer_to_desired_exposure_time_in_ms);
 bool acquire_image(double *pointer_to_desired_exposure_time_in_ms,
 double desired_relative_maximal_camera_response);
 //======================================================================
+bool acquire_image(
+double *pointer_to_desired_exposure_time_in_ms,
+double desired_relative_maximal_camera_response,
+double max_valid_exposure_time);
+//======================================================================
 bool long_time_exposure(bool long_time_exposure);
 //======================================================================
 void display_camera_information();

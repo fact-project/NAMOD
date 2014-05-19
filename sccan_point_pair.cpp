@@ -499,7 +499,9 @@ double *pointer_to_reflector_exposure_time_in_ms,
 double desired_max_rel_star_cam_response,
 double desired_max_rel_refl_cam_response,
 int		max_number_of_exposure_itterations,
-bool	*max_number_of_exposure_itterations_has_been_exceeded
+bool	*max_number_of_exposure_itterations_has_been_exceeded,
+double  max_valid_exposure_time,
+bool    *max_valid_exposure_time_exceeded
 ){
 	if(pointer_to_star_camera->is_initialized() == FALSE){
 		std::cout<<"sccan_point_pair -> acquire_sccan_images() -> ";
@@ -513,6 +515,12 @@ bool	*max_number_of_exposure_itterations_has_been_exceeded
 		return FALSE;
 	}
 	
+	if(max_valid_exposure_time<=0.0){
+		std::cout<<"sccan_point_pair -> acquire_sccan_images() -> ";
+		std::cout<<"max valid exposure time must not be zero or less.\n";			
+		return FALSE;
+	}
+	
 	bool star_image_ok;
 	bool reflector_image_ok;
 	
@@ -520,13 +528,17 @@ bool	*max_number_of_exposure_itterations_has_been_exceeded
 	pointer_to_star_camera->
 	acquire_image(
 	pointer_to_star_exposure_time_in_ms,
-	desired_max_rel_star_cam_response);
+	desired_max_rel_star_cam_response,
+	max_valid_exposure_time
+	);
 	
 	reflector_image_ok =
 	pointer_to_reflector_camera->
 	acquire_image(
 	pointer_to_reflector_exposure_time_in_ms,
-	desired_max_rel_refl_cam_response);	
+	desired_max_rel_refl_cam_response,
+	max_valid_exposure_time
+	);	
 	
 	star_image = 
 	pointer_to_star_camera->get_latest_image();
@@ -648,6 +660,8 @@ double radius_one_sigma_for_star_detection_in_degrees){
 		
 		single_star_has_been_found = true;
 		sccan_star = list_of_stars_in_star_image.at(0);
+		//sccan_star.set_sccan_run_number(run_number);
+		
 		
 		if(verbosity){
 			std::cout<<"find_bright_star_in_star_image() -> ";
@@ -916,6 +930,9 @@ uint mirror_ID
 		//==============================================================
 		// fill sccan analysis point
 		//==============================================================
+		pointer_to_a_new_sccan_analysis_point->
+		set_sccan_run_number(run_number);
+		
 		pointer_to_a_new_sccan_analysis_point->
 		set_mirror_ID(mirror_ID);
 	

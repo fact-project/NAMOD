@@ -31,3 +31,7 @@ cv::Point star_in_image::get_position_in_pixels()const{
 	return position_in_pixels;
 }
 //======================================================================
+void star_in_image::set_sccan_run_number(uint run_number){
+	star_direction_relative_to_camera.
+	set_sccan_run_number_of_highest_response(run_number);
+}

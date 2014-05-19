@@ -643,9 +643,9 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	//first leg
 	//==================================================================
 	cv::Point first_leg;
-	first_leg.x = center_of_tripod.x - 
+	first_leg.x = center_of_tripod.x + 
 	cos(tripod_orientation_z_in_rad)*tripod_leg_lenght_in_pixels;
-	first_leg.y = center_of_tripod.y + 
+	first_leg.y = center_of_tripod.y - 
 	sin(tripod_orientation_z_in_rad)*tripod_leg_lenght_in_pixels;
 	
 	cv::line(
@@ -670,10 +670,10 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	//second leg
 	//==================================================================
 	cv::Point second_leg;
-	second_leg.x = center_of_tripod.x - 
+	second_leg.x = center_of_tripod.x + 
 	cos(two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;
-	second_leg.y = center_of_tripod.y + 
+	second_leg.y = center_of_tripod.y - 
 	sin(two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;	
 
@@ -699,10 +699,10 @@ draw_mirror_tripod(sccan_image *image_to_draw_tripod_in,bool highlight){
 	//third leg
 	//==================================================================
 	cv::Point third_leg_position_in_image;
-	third_leg_position_in_image.x = center_of_tripod.x - 
+	third_leg_position_in_image.x = center_of_tripod.x + 
 	cos(2.0*two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;
-	third_leg_position_in_image.y = center_of_tripod.y + 
+	third_leg_position_in_image.y = center_of_tripod.y - 
 	sin(2.0*two_third_pi+tripod_orientation_z_in_rad)*
 	tripod_leg_lenght_in_pixels;	
 	
@@ -783,7 +783,7 @@ int &text_thickness){
 	if(rotation_instruction_in_revs>=0.0){
 		leg_text<<"+";
 	}
-	leg_text<<round(rotation_instruction_in_revs*(180/M_PI))<<"deg";
+	leg_text<< round(rotation_instruction_in_revs*360.0) <<"deg";
 	
 	cv::Point instruction_position;
 	instruction_position.x = (tripod_center.x + tripod_leg.x)/2.0;
@@ -870,6 +870,10 @@ DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 			DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse.
 			get_y_tilt_prompt_in_deg_min_sec();	
 			manual<<"\n";
+			manual<<"corresponding SCCAN run number (in case of simple max search): ";
+			manual<<DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse.
+			get_sccan_run_number_of_highest_response()<<"\n";
+			manual<<"\n";
 			manual<<"\n";
 			manual<<"direction of mirror relative to telescope which ";
 			manual<<"will be compensated:\n";				
@@ -935,7 +939,7 @@ calculate_mirror_missalignment(pointing_direction
 DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse){
 	
 	MirrorMisalignmentDirection =
-	DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse*0.5;
+	DirectionOfStarRelativeToTelescopeForBrightesetMirrorResponse*-0.5;
 
 	flag_misalignment_angles_have_been_calculated = true;
 }
@@ -958,7 +962,7 @@ calculate_bolt_manipulation_distances(){
 			std::cout<<"WARNING missalignment_angle_in_y_in_rad";
 			std::cout<<" is above approximation limit 10deg!\n";
 		}
-		if(verbosity){
+		if(true){
 			std::cout<<" __calculate_bolt_manipulation_distances(x:";
 			std::cout<<MirrorMisalignmentDirection.
 			get_x_tilt_prompt_in_deg_min_sec()<<",y:";
@@ -976,21 +980,24 @@ calculate_bolt_manipulation_distances(){
 	
 		Vector3D old_mirror_x; old_mirror_x.set_unit_vector_x();
 		Vector3D old_mirror_y; old_mirror_y.set_unit_vector_y();
-		 
-		Vector3D new_mirror_x = old_mirror_x + 
-		ez*MirrorMisalignmentDirection.direction_in_y_in_radiant;
+		
+		// calculate new x vector of pseudo mirror plane
+		Vector3D new_mirror_x = old_mirror_x - 
+		ez*MirrorMisalignmentDirection.direction_in_x_in_radiant;
 		
 		new_mirror_x = new_mirror_x/new_mirror_x.norm2();
 		
-		Vector3D new_mirror_y = old_mirror_y + 
-		ez*MirrorMisalignmentDirection.direction_in_x_in_radiant;
+		// calculate new y vector of pseudo mirror plane	
+		Vector3D new_mirror_y = old_mirror_y - 
+		ez*MirrorMisalignmentDirection.direction_in_y_in_radiant;
 		
 		new_mirror_y = new_mirror_y/new_mirror_y.norm2();
 		
+		// calculate new surface normal
 		Vector3D new_mirror_surface_normal = 
 		new_mirror_x.cross_product(new_mirror_y);
 		
-		if(verbosity){
+		if(true){
 			std::cout<<"| new pseudo mirror plane x vector     : ";
 			std::cout<<new_mirror_x.get_string()<<std::endl;
 			std::cout<<"| new pseudo mirror plane y vector     : ";
@@ -1001,7 +1008,8 @@ calculate_bolt_manipulation_distances(){
 		
 		/// calculate intersection parameter of line 
 		/// tripod_orientation_i_in_rad + ez * lambda: lambda.
-		
+		// point plane distance
+		/*
 		manipulation_distance_of_first_tripod_leg_in_m = 
 		(position_of_first_tripod_leg*(-1.0))*
 		new_mirror_surface_normal/
@@ -1016,8 +1024,19 @@ calculate_bolt_manipulation_distances(){
 		(position_of_third_tripod_leg*(-1.0))*
 		new_mirror_surface_normal/
 		(ez*new_mirror_surface_normal);
+		*/
 		
-		if(verbosity){
+		// alternative
+		manipulation_distance_of_first_tripod_leg_in_m = 
+		(new_mirror_surface_normal*(-1.0))*(position_of_first_tripod_leg);
+
+		manipulation_distance_of_second_tripod_leg_in_m = 
+		(new_mirror_surface_normal*(-1.0))*(position_of_second_tripod_leg);
+		
+		manipulation_distance_of_third_tripod_leg_in_m = 
+		(new_mirror_surface_normal*(-1.0))*(position_of_third_tripod_leg);	
+			
+		if(true){
 			std::cout<<std::endl;
 			std::cout<<"| manipulation distance 1: ";
 			std::cout.precision(10);
@@ -1033,12 +1052,12 @@ calculate_bolt_manipulation_distances(){
 			std::cout<<" [m]"<<std::endl;
 			std::cout<<"|__________________________________"<<std::endl;
 		}
-	
+	/*
 		tripod_orientation_z_in_rad;
 		manipulation_distance_of_first_tripod_leg_in_m;
 		manipulation_distance_of_second_tripod_leg_in_m;
 		manipulation_distance_of_third_tripod_leg_in_m;
-
+	*/
 		flag_manipulation_distances_have_been_calculated = true;
 		
 	}else{

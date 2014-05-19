@@ -27,6 +27,7 @@ class sccan_point_pair_handler 	:public user_interaction{
 	bool			exposure_range_is_good;
 	int 			sccan_run_number;
 
+	double  max_exposure_time_until_sccan_point_is_not_valid_anymore;
 
 	double 	threshold_in_sigmas_for_star_detection;
 	double 	star_recognition_one_sigma_radius_in_degrees;
