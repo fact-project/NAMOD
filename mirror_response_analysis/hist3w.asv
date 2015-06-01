@@ -1,0 +1,27 @@
+function[hist_map]=hist3w(data,x_grid,y_grid)
+
+
+ 
+hist_map = zeros(size(x_bins),y_bins);
+
+for t=1:1:size(data,1)
+    
+    % locate x
+    for x=1:1:x_bins-1
+        if( x_grid(x)<data(t,1) && x_grid(x+1)>=data(t,1))
+            X = x;
+        end
+    end
+
+    % locate y
+    for y=1:1:y_bins-1
+        if( y_grid(y)<data(t,2) && y_grid(y+1)>=data(t,2))
+            Y = y;
+        end
+    end    
+    
+   hist_map(X,Y)=hist_map(X,Y)+data(t,3);
+end
+
+
+end
