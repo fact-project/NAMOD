@@ -298,7 +298,7 @@ std::string user_interaction::get_alphanumeric_string_by_user(){
 		character_itterator<user_input.size();
 		character_itterator++)
 		{
-			if(ispunct(user_input[character_itterator]) &&
+			/*if(ispunct(user_input[character_itterator]) &&
 			user_input[character_itterator] != '_' ){
 				last_warning<<"Your input [";
 				last_warning<<user_input[character_itterator];
@@ -306,7 +306,7 @@ std::string user_interaction::get_alphanumeric_string_by_user(){
 				last_warning<<" in ["<<user_input<<"]";
 				last_warning<<" is a punctation!"<<std::endl;
 				user_input_is_valid=false;
-			}
+			}*/
 			if(isspace(user_input[character_itterator])){
 				last_warning<<"Your input [";
 				last_warning<<user_input[character_itterator];
@@ -481,8 +481,7 @@ make_nice_line_with_dots(std::string left_text,std::string right_text){
 	return out.str();
 }
 //======================================================================
-void user_interaction::
-export_text(std::string filename,std::string text){
+void user_interaction::export_text(std::string filename,std::string text){
 
 	if(verbosity){
 		std::cout << "user_interaction -> export_text() -> ";

@@ -353,8 +353,8 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 	//==================================================================
 	// check star radius
 	double maximal_camera_field_of_view_in_degrees = 
-	intrinsic_parameters.degrees_per_pixel * 
-	((image_matrix.cols + image_matrix.rows)/2.0);
+		intrinsic_parameters.degrees_per_pixel * 
+		((image_matrix.cols + image_matrix.rows)/2.0);
 	
 	if(verbosity){
 		std::cout<<"sccan_image -> ";
@@ -373,8 +373,8 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 	}
 	
 	double radius_of_one_sigma_region_for_star_detection_in_pixels =
-	radius_of_one_sigma_region_for_star_detection_in_degrees/
-	intrinsic_parameters.degrees_per_pixel;
+		radius_of_one_sigma_region_for_star_detection_in_degrees/
+		intrinsic_parameters.degrees_per_pixel;
 	
 	if(verbosity){
 		std::cout<<"sccan_image -> ";
@@ -401,30 +401,29 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 		std::cout<<"find_bright_star_in_image() -> ";
 		std::cout<<"image_to_work_with was copied."<<std::endl;
 		if(show_control_images)
-		star.disp_simple_image("original image to find star");
-
+			star.disp_simple_image("original image to find star");
 	}
 	//==================================================================	
 	// substracting median blurr
 	//==================================================================
 	simple_image star_minus_median(verbosity);
 	star_minus_median.image_matrix = 
-	star.image_matrix - 
-	star.create_median_image
-	(10.0*radius_of_one_sigma_region_for_star_detection_in_pixels);
+		star.image_matrix - star.create_median_image(
+			10.0*radius_of_one_sigma_region_for_star_detection_in_pixels
+		);
 
 	if(verbosity){
 		std::cout<<"sccan_image -> ";
 		std::cout<<"find_bright_star_in_star_image() -> ";
 		std::cout<<"spatial related median was substracted."<<std::endl;
 		if(show_control_images)
-		star_minus_median.disp_simple_image("star_minus_median");
+			star_minus_median.disp_simple_image("star_minus_median");
 	}
 	//==================================================================
 	// calculate noise level of image
 	//==================================================================
 	double noise_sigma_of_star_image_minus_median_image  =
-	star_minus_median.calculate_pixelvalue_standard_deviation();
+		star_minus_median.calculate_pixelvalue_standard_deviation();
 
 	if(verbosity){
 		std::cout<<"sccan_image -> ";
@@ -441,15 +440,13 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 	
 	// decide whether noise is neglectable or not
 	cv::Point brightest_point;
-	double highest_pixel_value =0.0;
-	star.get_brightest_pixel_of_image
-	(&brightest_point,&highest_pixel_value);
+	double highest_pixel_value = 0.0;
+	star.get_brightest_pixel_of_image(&brightest_point,&highest_pixel_value);
 	
-	if(
-	noise_sigma_of_star_image_minus_median_image*threshold_in_sigmas <
-	0.1 * highest_pixel_value
-	){
-		if(verbosity){
+	if(noise_sigma_of_star_image_minus_median_image*threshold_in_sigmas <
+		0.1 * highest_pixel_value
+	) {
+		if(verbosity) {
 			std::cout<<"sccan_image -> ";
 			std::cout<<"find_bright_star_in_star_image() -> ";
 			std::cout<<"noise is neglectable because sigma*threshold = ";
@@ -460,10 +457,10 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 			std::cout<<"pxv."<<std::endl;
 		}
 		
-		noise_sigma_of_star_image_minus_median_image=
+		noise_sigma_of_star_image_minus_median_image =
 		(0.1*highest_pixel_value)/threshold_in_sigmas;
 			
-		if(verbosity){	
+		if(verbosity) {	
 			std::cout<<"sccan_image -> ";
 			std::cout<<"find_bright_star_in_star_image() -> ";
 			std::cout<<"new sigma ";
@@ -474,19 +471,19 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 	//==================================================================
 	// applie gaussian blur
 	//==================================================================
-	int pixel_radius_for_gaussian = (int)
-	(round(round(
-	radius_of_one_sigma_region_for_star_detection_in_pixels)
-	/2.0))*2.0+1.0;
+	int pixel_radius_for_gaussian = 
+		(int)(round(round(
+		radius_of_one_sigma_region_for_star_detection_in_pixels)/2.0))*2.0+1.0;
 	
 	cv::Size gaussian_size;
 	gaussian_size.height = pixel_radius_for_gaussian;
 	gaussian_size.width  = pixel_radius_for_gaussian;
 	
 	GaussianBlur(
-	star_minus_median.image_matrix,
-	star_minus_median.image_matrix,
-	gaussian_size, 0.0,0.0);
+		star_minus_median.image_matrix,
+		star_minus_median.image_matrix,
+		gaussian_size, 0.0,0.0
+	);
 	
 	if(verbosity){
 		std::cout<<"sccan_image -> ";
@@ -495,8 +492,7 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 		std::cout<<"pixel_radius_for_gaussian "<<pixel_radius_for_gaussian;
 		std::cout<<"px"<<std::endl;
 		if(show_control_images)
-			star_minus_median.
-			disp_simple_image("star image with gaussian blurr");		
+			star_minus_median.disp_simple_image("star image with gaussian blurr");		
 	}
 	
 	//==================================================================	
@@ -547,15 +543,14 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 		std::cout<<radius_of_one_sigma_region_for_star_detection_in_pixels;
 		std::cout<<"px"<<std::endl;
 		if(show_control_images)
-			threshold_image.
-			disp_simple_image("threshold image");	
+			threshold_image.disp_simple_image("threshold image");	
 	}
 	//==================================================================
 	//spatial clustering
 	//==================================================================
 	std::vector<list_of_pixel_positions>  list_of_clusters;
 	
-	threshold_image.toggle_verbosity(show_control_images);
+	threshold_image.toggle_verbosity(verbosity);
 	
 	list_of_clusters = threshold_image.
 	spatial_clustering_of_threshold_mask(false);
@@ -594,14 +589,15 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 		}
 		
 		cv::Vec3b intensity_in_pixel_values = 
-		star_minus_median.image_matrix.at<cv::Vec3b>(
-		list_of_star_locations_in_pixels.at(star_itterator));
-		
+			star_minus_median.image_matrix.at<cv::Vec3b>(
+				list_of_star_locations_in_pixels.at(star_itterator)
+			);
+
 		double light_flux_of_star_in_pixel_values = (
-		double(intensity_in_pixel_values[0])+
-		double(intensity_in_pixel_values[1])+
-		double(intensity_in_pixel_values[2]))
-		/3.0;
+			double(intensity_in_pixel_values[0])+
+			double(intensity_in_pixel_values[1])+
+			double(intensity_in_pixel_values[2])
+			)/3.0;
 		
 		if(verbosity){
 			std::cout<<"sccan_image -> ";
@@ -611,9 +607,8 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 			std::cout<<double(intensity_in_pixel_values[1])<<"pxv, ";
 			std::cout<<double(intensity_in_pixel_values[2])<<"pxv";				
 			std::cout<<std::endl;
-		}		
-		
-		
+		}			
+
 		if(verbosity){
 			std::cout<<"sccan_image -> ";
 			std::cout<<"find_bright_star_in_star_image() -> ";
@@ -628,19 +623,19 @@ double radius_of_one_sigma_region_for_star_detection_in_degrees,bool show_contro
 		}		
 		
 		pointing_direction direction_of_star = 
-		intrinsic_parameters.calculate_pointing_direction(
-		list_of_star_locations_in_pixels.at(star_itterator));
+			intrinsic_parameters.calculate_pointing_direction(
+			list_of_star_locations_in_pixels.at(star_itterator));
 		
 		double absolute_light_flux_in_standard_bulbs = 
-		intrinsic_parameters.calculate_absolute_light_flux(
-		exposure_time_in_ms,
-		light_flux_of_star_in_pixel_values/255.0
-		);
+			intrinsic_parameters.calculate_absolute_light_flux(
+				exposure_time_in_ms,
+				light_flux_of_star_in_pixel_values/255.0
+			);
 		
-		star_in_image star
-		(absolute_light_flux_in_standard_bulbs,
-		direction_of_star,
-		list_of_star_locations_in_pixels.at(star_itterator)
+		star_in_image star(
+			absolute_light_flux_in_standard_bulbs,
+			direction_of_star,
+			list_of_star_locations_in_pixels.at(star_itterator)
 		);
 		list_of_stars_in_image.push_back(star);
 	}

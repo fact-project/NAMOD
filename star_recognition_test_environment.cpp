@@ -82,8 +82,7 @@ interaction(){
 	}while(continue_testing_star_recognition);
 }
 //======================================================================
-std::string star_recognition_test_environment::
-get_star_recognition_test_prompt(){
+std::string star_recognition_test_environment::get_star_recognition_test_prompt(){
 	std::stringstream out, info;
 	
 	// image to be tested
@@ -118,8 +117,7 @@ get_star_recognition_test_prompt(){
 	return out.str();
 }
 //======================================================================
-void star_recognition_test_environment::
-test_star_recognition(){
+void star_recognition_test_environment::test_star_recognition(){
 	if(image_has_been_loaded){
 				
 		std::cout<<"testing_star_recognition->show_image->";
@@ -199,8 +197,7 @@ test_star_recognition(){
 	
 }
 //======================================================================
-void star_recognition_test_environment::
-load_image(std::string filename_of_image_to_be_tested){
+void star_recognition_test_environment::load_image(std::string filename_of_image_to_be_tested){
 	
 	std::cout<<"testing_star_recognition->load_image->";
 	std::cout<<filename_of_image_to_be_tested<<"\n";
@@ -214,8 +211,7 @@ load_image(std::string filename_of_image_to_be_tested){
 	
 }
 //======================================================================
-void star_recognition_test_environment::
-show_image(){
+void star_recognition_test_environment::show_image(){
 	
 	if(image_has_been_loaded){
 		image_to_be_tested.disp_simple_image("image to be tested");
@@ -225,8 +221,7 @@ show_image(){
 	}
 }
 //======================================================================
-void star_recognition_test_environment::
-set_test_intrinsic_parameters(){
+void star_recognition_test_environment::set_test_intrinsic_parameters(){
 
 	parameters_of_image_to_be_tested.
 	set_camera_sensor_size(
