@@ -1,0 +1,106 @@
+clc;
+clear all;
+close all;
+
+path = 'final_sccan\';
+number_of_mirrors = 0;
+
+for i=1:1:50
+
+    filename = ['mirror_ID',num2str(i),'_response_map.csv'];
+    
+    csv_file_dir = [path,filename];
+    if(exist(csv_file_dir)==2)
+       
+        number_of_mirrors = number_of_mirrors + 1; 
+
+        MRM{number_of_mirrors,1} = i;
+        MRM{number_of_mirrors,2} = ...
+        csvread(csv_file_dir,1,0);
+        
+
+    end
+    
+    
+end
+%number_of_mirrors
+%mirror_ID17_response_map.csv
+%%
+font_size  =12;
+close all
+clc
+x_bins = 31;
+y_bins = 31;
+
+fov = 0.3; % in DEG
+
+ctrs = cell(2,1);
+ctrs{1} = linspace(-fov,fov,x_bins);
+ctrs{2} = linspace(-fov,fov,y_bins);
+
+overlay_mrm = zeros(x_bins,y_bins);
+
+for t=1:1:number_of_mirrors-25
+% calculate mean of mrm
+mean_mrm_location = CalcWeightedMean(MRM{t,2})
+
+
+C=hist3w(MRM{t,2},ctrs{1},ctrs{2});
+C = C*1e4;
+
+H = figure()
+hold on
+axis([-fov fov -fov fov])
+axis square
+h=pcolor(ctrs{1},ctrs{2},C);
+
+plot(mean_mrm_location(2),mean_mrm_location(1),'x')
+text(mean_mrm_location(2),mean_mrm_location(1),'x')
+colormap(flipud(colormap(gray(max(max(C))))))
+set(h,'edgecolor',[0.8,0.8,0.8]) 
+colorbar()
+title(['mirror ID ',num2str(MRM{t,1})],'fontsize',font_size,'interpreter','latex');
+xlabel('x [DEG]','fontsize',font_size,'interpreter','latex');
+ylabel('y [DEG]','fontsize',font_size,'interpreter','latex');
+%grid on
+
+set(gcf, 'PaperPosition', [-0.75 -1 20 18]); 
+set(gcf, 'PaperSize', [ 18 16]); 
+saveas(gcf,[path,'mirror_ID',num2str(MRM{t,1}),'_response_map'], 'pdf') 
+
+overlay_mrm = overlay_mrm + C;
+
+close(H)
+end
+
+%% overall psf before final sccan
+
+
+H = figure()
+hold on
+axis([-fov fov -fov fov])
+axis square
+h=pcolor(ctrs{1},ctrs{2},overlay_mrm);
+colormap(flipud(colormap(gray(max(max(C))))))
+set(h,'edgecolor',[0.8,0.8,0.8]) 
+colorbar()
+xlabel('x [DEG]','fontsize',font_size,'interpreter','latex');
+ylabel('y [DEG]','fontsize',font_size,'interpreter','latex');
+%grid on
+
+set(gcf, 'PaperPosition', [-0.75 -1 20 18]); 
+set(gcf, 'PaperSize', [ 18 16]); 
+saveas(gcf,[path,'combined_mirror_response_map'], 'pdf') 
+
+
+
+
+
+
+
+
+
+
+
+
+
