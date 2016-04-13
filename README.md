@@ -1,1 +1,1 @@
-# multi mirror alignment tool for multi mirror telescoes in astro particle physics
+# Normalized and Asynchronous Mirror Orientation Determination for Cherenkov Telescopes
